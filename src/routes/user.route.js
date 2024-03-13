@@ -20,6 +20,10 @@ router.post( '/login-with-mobileNumber', userMiddleware.loginWithMobileNumber, c
 
 router.post( '/verify-verification-code', userMiddleware.verifyVerificationCode, controller.verifyVerificationCode );
 
+router.post( '/signIn-with-google', userMiddleware.signInWithGoogle, controller.signInWithGoogle );
+
+router.post( '/signIn-with-facebook', userMiddleware.signInWithFacebook, controller.signInWithFacebook );
+
 router.get( '/get-profile', passportAuthentication, controller.getProfile );
 
 router.patch( '/update-profile', passportAuthentication, userMiddleware.updateProfile, controller.updateProfile );

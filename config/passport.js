@@ -1,6 +1,7 @@
 const JwtStrategy = require( 'passport-jwt' ).Strategy;
 const ExtractJwt = require( 'passport-jwt' ).ExtractJwt;
 const User = require( '../src/models/user.model' );
+const Farmer = require( '../src/models/farmer.model' );
 
 module.exports = function ( passport )
 {
@@ -18,9 +19,15 @@ module.exports = function ( passport )
                     if ( user )
                     {
                         return done( null, user );
-                    } else
+                    }
+                    const farmer = await Farmer.findById( jwt_payload.id );
+                    if ( farmer )
                     {
-                        return done( null, false, { message: 'User not found', status: 404 } );
+                        return done( null, farmer );
+                    }
+                    else
+                    {
+                        return done( null, false, { message: 'Data not found', status: 404 } );
                     }
                 } catch ( err )
                 {

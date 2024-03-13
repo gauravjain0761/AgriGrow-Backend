@@ -37,6 +37,10 @@ const userModel = new mongoose.Schema(
             type: Date,
             default: null,
         },
+        socialLogin: {
+            type: Boolean,
+            default: false,
+        },
         deviceToken: {
             type: String,
             default: null,

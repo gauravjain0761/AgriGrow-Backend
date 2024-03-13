@@ -18,9 +18,15 @@ mongoose.connection.on( 'open', () =>
 } );
 
 const userRoutes = require( './routes/user.route' );
+const cityRoutes = require( './routes/city.route' );
+const categoryRoutes = require( './routes/category.route' );
 
 app.use( '/api/v1/user', userRoutes );
+app.use( '/api/v1/city', cityRoutes );
+app.use( '/api/v1/category', categoryRoutes );
 
+
+app.use( '/uploads', express.static( 'uploads' ) );
 
 app.get( '/', ( req, res ) => res.send( 'Welcome to Agri Grow.....' ) );
 
