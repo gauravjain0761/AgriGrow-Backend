@@ -13,5 +13,4 @@ router.post( '/add-category', categoryMiddleware.addCategory, passportAuthentica
 router.get( '/get-all-category', passportAuthentication, controller.getAllCategory );
 
 
-
 module.exports = router;

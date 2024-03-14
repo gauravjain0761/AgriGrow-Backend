@@ -71,7 +71,7 @@ const userLogin = async ( req, res ) =>
         {
             return res.status( 404 ).send( {
                 status: false,
-                message: "User Not Found!",
+                message: "not found!",
             } );
         }
 
@@ -84,7 +84,7 @@ const userLogin = async ( req, res ) =>
         {
             return res.status( 400 ).send( {
                 status: false,
-                message: "Incorrect email or password!",
+                message: "incorrect email or password!",
             } );
         }
 
@@ -99,7 +99,7 @@ const userLogin = async ( req, res ) =>
 
         return res.status( 200 ).send( {
             status: true,
-            message: "Login successfully",
+            message: "login successfully",
             token: token,
             userData: user
         } );

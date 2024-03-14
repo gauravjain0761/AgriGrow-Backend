@@ -41,6 +41,22 @@ const userModel = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        state: {
+            type: String,
+            default: null,
+        },
+        city: {
+            type: String,
+            default: null,
+        },
+        postalCode: {
+            type: String,
+            default: null,
+        },
+        streetAddress: {
+            type: String,
+            default: null,
+        },
         deviceToken: {
             type: String,
             default: null,
