@@ -42,10 +42,11 @@ const addProduct = async ( req, res ) =>
                     category: category.name,
                     name: name,
                     description: description,
-                    price: price,
-                    discount: discount,
                     totalQuantity: totalQuantity,
                     availableQuantity: totalQuantity,
+                    price: price,
+                    totalPrice: price * totalQuantity,
+                    discount: discount,
                     image: imageFilePath,
                 } );
 
@@ -139,11 +140,52 @@ const getProductDetails = async ( req, res ) =>
     }
 };
 
+// search product
+const searchProduct = async ( req, res ) =>
+{
+    try
+    {
+        // const user = await userModel.find(
+        //     { name: { $regex: `${ name }`, $options: 'i' }, isAvailable: true },
+        //     // { name: { $regex: `^${ name }`, $options: 'i' }, isAvailable: true },
+        // );
+
+        const { name, category } = req.body;
+        const product = await productModel.find( {
+            $or: [
+                { name: { $regex: `${ name }`, $options: 'i' }, },
+                { category: { $regex: `${ category }`, $options: 'i' }, },
+            ]
+        } );
+        // console.log( product );
+        if ( !product )
+        {
+            return res.status( 404 ).json( {
+                status: false,
+                message: 'not found!'
+            } )
+        };
+
+        return res.status( 200 ).json( {
+            status: true,
+            message: 'searched successfully',
+            data: product
+        } );
+    } catch ( error )
+    {
+        return res.status( 500 ).json( {
+            status: false,
+            message: error.message
+        } )
+    }
+};
+
 
 module.exports = {
     addProduct,
     getAllProduct,
     getProductDetails,
+    searchProduct,
 };
 
 

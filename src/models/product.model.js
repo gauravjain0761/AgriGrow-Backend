@@ -23,15 +23,6 @@ const productModel = new mongoose.Schema(
             required: true,
             default: null,
         },
-        price: {
-            type: Number,
-            required: true,
-            default: 0,
-        },
-        discount: {
-            type: Number,
-            default: 0,
-        },
         totalQuantity: {
             type: Number,
             required: true,
@@ -42,6 +33,25 @@ const productModel = new mongoose.Schema(
             // required: true,
             default: 0,
         },
+        price: {
+            type: Number,
+            required: true,
+            default: 0,
+        },
+        totalPrice: {
+            type: Number,
+            required: true,
+            default: 0,
+        },
+        discount: {
+            type: Number,
+            default: 0,
+        },
+        // status: {
+        //     type: String,
+        //     enum: [ 'Available', 'Sold' ],
+        //     default: null,
+        // },
         isAvailable: {
             type: Boolean,
             default: true,

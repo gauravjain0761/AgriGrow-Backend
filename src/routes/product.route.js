@@ -13,6 +13,7 @@ router.get( '/get-all-product', passportAuthentication, controller.getAllProduct
 
 router.get( '/get-product-details/:id', passportAuthentication, controller.getProductDetails );
 
+router.post( '/search-product', passportAuthentication, controller.searchProduct );
 
 
 module.exports = router;

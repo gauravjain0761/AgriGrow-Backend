@@ -86,7 +86,7 @@ const userLogin = async ( req, res ) =>
                 status: false,
                 message: "incorrect email or password!",
             } );
-        }
+        };
 
         const token = jwt.sign(
             { id: user._id, email: user.email },

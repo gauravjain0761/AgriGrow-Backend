@@ -20,6 +20,7 @@ mongoose.connection.on( 'open', () =>
 const userRoutes = require( './routes/user.route' );
 const farmerRoutes = require( './routes/farmer.route' );
 const productRoutes = require( './routes/product.route' );
+const cartRoutes = require( './routes/cart.route' );
 const cityRoutes = require( './routes/city.route' );
 const categoryRoutes = require( './routes/category.route' );
 const feedbackRoutes = require( './routes/feedback.route' );
@@ -27,6 +28,7 @@ const feedbackRoutes = require( './routes/feedback.route' );
 app.use( '/api/v1/user', userRoutes );
 app.use( '/api/v1/farmer', farmerRoutes );
 app.use( '/api/v1/product', productRoutes );
+app.use( '/api/v1/cart', cartRoutes );
 app.use( '/api/v1/city', cityRoutes );
 app.use( '/api/v1/category', categoryRoutes );
 app.use( '/api/v1/feedback', feedbackRoutes );
@@ -48,8 +50,5 @@ app.listen( Port, () =>
 //Product buy sell data will be save in DB or not
 // Best product
 // Best deal offer product
-
-
-
 
 
