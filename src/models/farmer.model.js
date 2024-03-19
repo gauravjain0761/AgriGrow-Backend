@@ -1,4 +1,5 @@
 const mongoose = require( "mongoose" );
+const constants = require( "../../config/constants.json" );
 
 const farmerModel = new mongoose.Schema(
     {
@@ -53,6 +54,11 @@ const farmerModel = new mongoose.Schema(
         farmLocation: {
             type: String,
             default: null,
+        },
+        role: {
+            type: String,
+            enum: [ constants.ROLE.USER, constants.ROLE.FARMER ],
+            default: constants.ROLE.FARMER,
         },
         deviceToken: {
             type: String,

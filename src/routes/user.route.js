@@ -5,7 +5,7 @@ require( './../../config/passport' )( passport );
 const controller = require( '../controllers/user.controller' );
 const userMiddleware = require( '../middlewares/user.middleware' );
 const passportAuthentication = passport.authenticate( 'jwt', { session: false } );
-
+const { userRoleMiddleware } = require( '../../config/userRoleMiddleware' );
 
 
 router.post( '/sign-up', userMiddleware.userSignUp, controller.userSignUp );
@@ -24,9 +24,9 @@ router.post( '/signIn-with-google', userMiddleware.signInWithGoogle, controller.
 
 router.post( '/signIn-with-facebook', userMiddleware.signInWithFacebook, controller.signInWithFacebook );
 
-router.get( '/get-profile', passportAuthentication, controller.getProfile );
+router.get( '/get-profile', passportAuthentication, userRoleMiddleware, controller.getProfile );
 
-router.patch( '/update-profile', passportAuthentication, userMiddleware.updateProfile, controller.updateProfile );
+router.patch( '/update-profile', passportAuthentication, userRoleMiddleware, userMiddleware.updateProfile, controller.updateProfile );
 
 // router.post( '/logOut', passportAuthentication, controller.userLogOut );
 

@@ -10,6 +10,10 @@ const cartModel = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'product'
         },
+        farmerId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'farmer'
+        },
         quantity: {
             type: Number,
             required: true,

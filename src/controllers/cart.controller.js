@@ -37,6 +37,7 @@ const addProductToCart = async ( req, res ) =>
         const addProduct = new cartModel( {
             userId: user._id,
             productId: productId,
+            farmerId: product.farmerId,
             quantity: quantity,
             totalPrice: totalPrice,
             time: moment().unix()
@@ -96,8 +97,98 @@ const getAllCartProducts = async ( req, res ) =>
     }
 };
 
+// updateCartProduct
+const updateCartProduct = async ( req, res ) =>
+{
+    try
+    {
+        const { quantity } = req.body;
+        const { id } = req.params;
+        console.log( id );
+        const cartProduct = await cartModel.findOne( { _id: id, userId: req.user._id } );
+        if ( !cartProduct )
+        {
+            return res.status( 404 ).json( {
+                status: false,
+                message: 'cart product not found'
+            } )
+        };
+
+        console.log( 1111111, cartProduct );
+        console.table( cartProduct );
+        return res.status( 200 ).json( {
+            status: true,
+            message: 'all products in the cart fetched successfully',
+            data: cartProduct
+        } )
+    } catch ( error )
+    {
+        return res.status( 500 ).json( {
+            status: false,
+            message: error.message
+        } )
+    }
+};
+
+// removeProductFromCart
+const removeProductFromCart = async ( req, res ) =>
+{
+    try
+    {
+        const { quantity } = req.body;
+        const { id } = req.params;
+        console.log( id );
+        const cartProduct = await cartModel.findOne( { _id: id, userId: req.user._id } );
+        if ( !cartProduct )
+        {
+            return res.status( 404 ).json( {
+                status: false,
+                message: 'cart product not found'
+            } )
+        };
+
+        const product = await productModel.findOne( { _id: cartProduct.productId, isAvailable: true } );
+        if ( !product )
+        {
+            return res.status( 404 ).json( {
+                status: false,
+                message: "product not found!",
+            } )
+        };
+
+        if ( quantity > cartProduct.quantity )
+        {
+            return res.status( 400 ).json( {
+                status: false,
+                message: `can't remove more than ${ cartProduct.quantity } quantity`,
+            } )
+        };
+
+        cartProduct.quantity = quantity ? quantity : cartProduct.quantity;
+        await cartProduct.save();
+
+
+        console.log( 1111111, cartProduct );
+        console.table( cartProduct );
+        return res.status( 200 ).json( {
+            status: true,
+            message: 'all products in the cart fetched successfully',
+            data: cartProduct
+        } )
+    } catch ( error )
+    {
+        return res.status( 500 ).json( {
+            status: false,
+            message: error.message
+        } )
+    }
+};
+
 
 module.exports = {
     addProductToCart,
     getAllCartProducts,
+    updateCartProduct,
+    removeProductFromCart,
 };
+

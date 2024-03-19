@@ -1,7 +1,12 @@
 const mongoose = require( "mongoose" );
+const constants = require( "../../config/constants.json" );
 
 const productModel = new mongoose.Schema(
     {
+        farmerId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'farmer'
+        },
         categoryId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'category'
@@ -47,11 +52,20 @@ const productModel = new mongoose.Schema(
             type: Number,
             default: 0,
         },
-        // status: {
-        //     type: String,
-        //     enum: [ 'Available', 'Sold' ],
-        //     default: null,
-        // },
+        status: {
+            type: String,
+            enum: [ constants.STATUS.AVAILABLE, constants.STATUS.SOLD ],
+            default: constants.STATUS.AVAILABLE,
+        },
+        // verified: {
+        //     type: Boolean,
+        //     default: constants.STATUS.INACTIVE,
+        //     enum: [constants.STATUS.INACTIVE, constants.STATUS.ACTIVE],
+        //   },
+        bestDealOfferProduct: {
+            type: Boolean,
+            default: false,
+        },
         isAvailable: {
             type: Boolean,
             default: true,

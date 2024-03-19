@@ -1,4 +1,5 @@
 const mongoose = require( "mongoose" );
+const constants = require( "../../config/constants.json" );
 
 const userModel = new mongoose.Schema(
     {
@@ -57,6 +58,11 @@ const userModel = new mongoose.Schema(
             type: String,
             default: null,
         },
+        role: {
+            type: String,
+            enum: [ constants.ROLE.USER, constants.ROLE.FARMER ],
+            default: constants.ROLE.USER,
+        },
         deviceToken: {
             type: String,
             default: null,
@@ -73,4 +79,4 @@ const userModel = new mongoose.Schema(
 
 
 
-module.exports = mongoose.model( "USER", userModel );
+module.exports = mongoose.model( "user", userModel );

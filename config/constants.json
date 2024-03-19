@@ -1,0 +1,10 @@
+{
+    "ROLE": {
+        "USER": "USER",
+        "FARMER": "FARMER"
+    },
+    "STATUS": {
+        "AVAILABLE": "AVAILABLE",
+        "SOLD": "SOLD"
+    }
+}
