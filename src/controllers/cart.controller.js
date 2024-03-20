@@ -83,10 +83,28 @@ const getAllCartProducts = async ( req, res ) =>
             } )
         };
 
+        const getDate = productList.map( data =>
+        {
+            const date = new Date( data.time * 1000 );
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+
+            const formattedDate = `${ day < 10 ? '0' : '' }${ day }-${ month < 10 ? '0' : '' }${ month }-${ year }`;
+            const formattedTime = moment( date ).format( 'hh:mm A' );
+
+            return {
+                ...data.toObject(),
+                addProductToCartDate: formattedDate,
+                addProductToCartTime: formattedTime,
+            };
+        } );
+
         return res.status( 200 ).json( {
             status: true,
             message: 'all products in the cart fetched successfully',
-            data: productList
+            // data: productList
+            data: getDate
         } )
     } catch ( error )
     {

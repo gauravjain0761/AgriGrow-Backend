@@ -66,6 +66,10 @@ const productModel = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        time: {
+            type: String,
+            default: null,
+        },
         isAvailable: {
             type: Boolean,
             default: true,

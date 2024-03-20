@@ -50,7 +50,8 @@ const addProduct = async ( req, res ) =>
                     totalPrice: price * totalQuantity,
                     discount: discount,
                     image: imageFilePath,
-                    bestDealOfferProduct: bestDealOfferProduct
+                    bestDealOfferProduct: bestDealOfferProduct,
+                    time: moment().unix()
                 } );
 
                 await product.save();
