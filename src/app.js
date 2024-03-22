@@ -12,6 +12,7 @@ app.use( bodyParser.urlencoded( { extended: true } ) );
 const URL = process.env.MONGO_URL;
 mongoose.set( 'strictQuery', true );
 mongoose.connect( URL );
+
 mongoose.connection.on( 'open', () =>
 {
     console.log( 'MongoDB has connected successfully' );
@@ -49,8 +50,17 @@ app.listen( Port, () =>
 
 
 
-//Product buy sell data will be save in DB or not
+// Product buy sell data will be save in DB or not
 // Best product
 // Best deal offer product
+
+
+
+
+
+
+
+
+
 
 

@@ -28,6 +28,24 @@ const productModel = new mongoose.Schema(
             required: true,
             default: null,
         },
+        // shares: {
+        //     type: [ {
+        //         shareByUserId: {
+        //             type: mongoose.Schema.Types.ObjectId,
+        //             ref: 'USER'
+        //         },
+        //     } ]
+        // },
+        // images: [{
+        //     type: String,
+        //     required: true,
+        //     default: null,
+        // }],
+        // productImages: [{
+        //     type: String,
+        //     required: true,
+        //     default: null,
+        // }],
         totalQuantity: {
             type: Number,
             required: true,

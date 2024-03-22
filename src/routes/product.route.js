@@ -21,5 +21,7 @@ router.post( '/search-product', passportAuthentication, controller.searchProduct
 
 router.get( '/product-all-details/:productId', passportAuthentication, farmerRoleMiddleware, controller.productAllDetails );
 
+// router.get( '/delete-product/:productId', passportAuthentication, farmerRoleMiddleware, controller.deleteProduct );
+
 
 module.exports = router;

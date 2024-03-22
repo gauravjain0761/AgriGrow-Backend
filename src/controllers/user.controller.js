@@ -5,7 +5,7 @@ const { generateRandomNumber } = require( "../../helpers/randomNumber.helper" );
 const { sendOtp } = require( "../../helpers/sendEmail.helper" );
 
 
-const { uploadImage } = require( '../../helpers/multer' );
+const { uploadProfileImage } = require( '../../helpers/multer' );
 const fs = require( 'fs' );
 const path = require( 'path' );
 const moment = require( 'moment' );
@@ -417,7 +417,7 @@ const updateProfile = async ( req, res ) =>
     try
     {
         const user = await req.user;
-        uploadImage( req, res, async ( err ) =>
+        uploadProfileImage( req, res, async ( err ) =>
         {
             try
             {
@@ -433,12 +433,13 @@ const updateProfile = async ( req, res ) =>
                 if ( user.image )
                 {
                     const oldImagePath = path.join( __dirname, '../../', user.image );
+                    // const oldImagePath = path.join( __dirname, '../../', user.image );
                     if ( fs.existsSync( oldImagePath ) )
                     {
                         fs.unlinkSync( oldImagePath );
                     }
                 };
-                const imageFilePath = req.file ? `/uploads/${ moment().unix() }-${ req.file.originalname }` : null;
+                const imageFilePath = req.file ? `/uploads/profileImages/${ moment().unix() }-${ req.file.originalname }` : null;
 
                 user.email = email ? email.toLowerCase() : user.email;
                 user.mobile = mobile ? mobile : user.mobile;

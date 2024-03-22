@@ -5,10 +5,11 @@ require( './../../config/passport' )( passport );
 const controller = require( '../controllers/farmer.controller' );
 const farmerMiddleware = require( '../middlewares/farmer.middleware' );
 const passportAuthentication = passport.authenticate( 'jwt', { session: false } );
+const { farmerRoleMiddleware } = require( '../../config/userRoleMiddleware' );
 
 
 
-router.post( '/sign-up', farmerMiddleware.farmerSignUp, controller.farmerSignUp );
+router.post( '/sign-up',/*  farmerMiddleware.farmerSignUp, */ controller.farmerSignUp );
 
 router.post( '/login', farmerMiddleware.farmerLogin, controller.farmerLogin );
 
@@ -24,9 +25,11 @@ router.post( '/login', farmerMiddleware.farmerLogin, controller.farmerLogin );
 
 // router.post( '/signIn-with-facebook', farmerMiddleware.signInWithFacebook, controller.signInWithFacebook );
 
-// router.get( '/get-profile', passportAuthentication, controller.getProfile );
+router.get( '/get-profile', passportAuthentication, farmerRoleMiddleware, controller.getProfile );
 
-// router.patch( '/update-profile', passportAuthentication, farmerMiddleware.updateProfile, controller.updateProfile );
+router.patch( '/update-profile', passportAuthentication, farmerRoleMiddleware, controller.updateProfile );
+
+// router.patch( '/add-certificates', passportAuthentication, farmerRoleMiddleware, controller.addCertificates );
 
 // router.post( '/logOut', passportAuthentication, controller.farmerLogOut );
 
