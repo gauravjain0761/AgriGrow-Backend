@@ -56,11 +56,11 @@ const farmerSignUp = async ( req, res ) =>
         {
             try
             {
-                console.log( 2222, req.files );
+                // console.log( 2222, req.files );
                 if ( err )
                 {
                     console.log( 'Error during file upload:', err );
-                    // deleteUploadedFiles( req.files );
+                    deleteUploadedFiles( req.files );
                     return res.status( 500 ).send( {
                         status: false,
                         message: 'Error during file upload: ' + err.message,
@@ -105,7 +105,7 @@ const farmerSignUp = async ( req, res ) =>
                 } );
             } catch ( error )
             {
-                // deleteUploadedFiles( req.files );
+                deleteUploadedFiles( req.files );
                 console.log( error );
                 if ( error.code === 11000 && error.keyPattern && ( error.keyPattern.email || error.keyPattern.mobile ) )
                 {
@@ -131,6 +131,46 @@ const farmerSignUp = async ( req, res ) =>
         } )
     }
 };
+
+
+function deleteUploadedFiles ( files )
+{
+    if ( !files ) return;
+    for ( const file of Object.values( files ) )
+    {
+        if ( Array.isArray( file ) )
+        {
+            for ( const f of file )
+            {
+                fs.unlink( f.path, ( err ) =>
+                {
+                    if ( err )
+                    {
+                        console.error( 'Error deleting file:', err );
+                    } else
+                    {
+                        console.log( 'File deleted successfully:', f.path );
+                    }
+                } );
+            }
+        } else
+        {
+            fs.unlink( file.path, ( err ) =>
+            {
+                if ( err )
+                {
+                    console.error( 'Error deleting file:', err );
+                } else
+                {
+                    console.log( 'File deleted successfully:', file.path );
+                }
+            } );
+        }
+    }
+};
+
+
+
 
 // login
 const farmerLogin = async ( req, res ) =>

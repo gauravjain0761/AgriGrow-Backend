@@ -43,6 +43,10 @@ const farmerModel = new mongoose.Schema(
             type: String,
             default: null,
         },
+        village: {
+            type: String,
+            default: null,
+        },
         postalCode: {
             type: String,
             default: null,
@@ -52,10 +56,6 @@ const farmerModel = new mongoose.Schema(
             default: null,
         },
         farmLocation: {
-            type: String,
-            default: null,
-        },
-        village: {
             type: String,
             default: null,
         },
