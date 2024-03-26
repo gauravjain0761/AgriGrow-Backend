@@ -46,6 +46,16 @@ const productModel = new mongoose.Schema(
         //     required: true,
         //     default: null,
         // }],
+
+        // product name
+        // desc
+        // select 3 images
+        // original price
+        // offer price
+        // discount
+        // add Qunatiyt
+        // add ons
+
         totalQuantity: {
             type: Number,
             required: true,

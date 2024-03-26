@@ -1,7 +1,7 @@
 const farmerModel = require( '../models/farmer.model' );
 const crypto = require( 'crypto-js' );
 const jwt = require( 'jsonwebtoken' );
-// const { generateRandomNumber } = require( "../../helpers/randomNumber.helper" );
+const { generateRandomNumber } = require( "../../helpers/randomNumber.helper" );
 // const { sendOtp } = require( "../../helpers/sendEmail.helper" );
 
 
@@ -179,12 +179,22 @@ const farmerLogin = async ( req, res ) =>
     {
         const { email, mobile, password, deviceToken } = req.body;
 
-        const farmer = await farmerModel.findOne( {
-            $or: [
-                { email: email },
-                { mobile: mobile }
-            ]
-        } );
+        let query = {};
+        if ( email )
+        {
+            query = { email: email.toLowerCase() };
+        } else if ( mobile )
+        {
+            query = { mobile: mobile };
+        } else
+        {
+            return res.status( 400 ).json( {
+                status: false,
+                message: "Email or mobile number is required."
+            } );
+        };
+
+        const farmer = await farmerModel.findOne( { $or: [ query ] } );
 
         if ( !farmer )
         {
@@ -232,6 +242,97 @@ const farmerLogin = async ( req, res ) =>
     }
 };
 
+// login with mobile
+const loginWithMobileNumber = async ( req, res ) =>
+{
+    try
+    {
+        const { mobile } = req.body;
+
+        const farmer = await farmerModel.findOne( { mobile: mobile } )
+        if ( !farmer )
+        {
+            return res.status( 404 ).send( {
+                status: false,
+                message: "farmer Not Found!",
+            } );
+        };
+
+        const getOtp = generateRandomNumber( 4 );
+        farmer.otp = getOtp;
+        const otpValidTill = new Date();
+        otpValidTill.setMinutes( otpValidTill.getMinutes() + 10 );
+        farmer.otpValidTill = otpValidTill;
+
+        await farmer.save();
+        return res.status( 200 ).send( {
+            status: true,
+            message: `registration otp send to ${ farmer.mobile } successfully`,
+            data: farmer
+        } );
+    } catch ( error )
+    {
+        console.log( error );
+        return res.status( 500 ).send( {
+            status: false,
+            message: error.message,
+        } );
+    }
+};
+
+// verify verification code
+const verifyVerificationCode = async ( req, res ) =>
+{
+    try
+    {
+        const { mobile, otp, deviceToken } = req.body;
+
+        const farmer = await farmerModel.findOne( { mobile: mobile } );
+        if ( !farmer )
+        {
+            return res.status( 404 ).send( {
+                status: false,
+                message: "farmer Not Found!",
+            } );
+        };
+        if ( farmer.otp !== otp )
+        {
+            return res.status( 404 ).send( {
+                status: false,
+                message: "OTP not matched!"
+            } );
+        };
+        if ( farmer.otpValidTill < new Date() )
+        {
+            return res.status( 404 ).send( {
+                status: false,
+                message: "OTP valid for only 10 minutes, please use new OTP!"
+            } );
+        };
+
+        const token = jwt.sign(
+            { id: farmer._id, mobile: farmer.mobile }, "qwerty1234", { expiresIn: '24h' }
+        );
+
+        farmer.deviceToken = deviceToken;
+        farmer.otp = null;
+        await farmer.save();
+
+        return res.status( 200 ).send( {
+            status: true,
+            message: "verify otp successfully",
+            token: token,
+            data: farmer,
+        } );
+    } catch ( error )
+    {
+        return res.status( 500 ).send( {
+            status: false,
+            message: error.message
+        } )
+    }
+};
+
 // get profile
 const getProfile = async ( req, res ) =>
 {
@@ -242,6 +343,98 @@ const getProfile = async ( req, res ) =>
             message: "profile fetched successfully",
             data: req.user
         } )
+    } catch ( error )
+    {
+        return res.status( 500 ).json( {
+            status: false,
+            message: error.message
+        } )
+    }
+};
+
+// sign-in with Google
+const signInWithGoogle = async ( req, res ) =>
+{
+    try
+    {
+        const { email, deviceToken } = req.body;
+        const farmer = await farmerModel.findOne( { email: email.toLowerCase() } );
+        if ( !farmer )
+        {
+            return res.status( 404 ).json( {
+                status: false,
+                message: 'not found!'
+            } )
+        };
+
+        const token = jwt.sign(
+            { id: farmer._id, email: farmer.email }, "qwerty1234", { expiresIn: '24h' }
+        );
+
+        farmer.deviceToken = deviceToken;
+        farmer.socialLogin = true;
+        await farmer.save();
+
+        return res.status( 200 ).send( {
+            status: true,
+            message: "login successfully",
+            token: token,
+            data: farmer,
+        } );
+    } catch ( error )
+    {
+        return res.status( 500 ).json( {
+            status: false,
+            message: error.message
+        } )
+    }
+};
+
+// sign-in with Facebook
+const signInWithFacebook = async ( req, res ) =>
+{
+    try
+    {
+        const { email, mobile, deviceToken } = req.body;
+        let query = {};
+        if ( email )
+        {
+            query = { email: email.toLowerCase() };
+        } else if ( mobile )
+        {
+            query = { mobile: mobile };
+        } else
+        {
+            return res.status( 400 ).json( {
+                status: false,
+                message: "Email or mobile number is required."
+            } );
+        };
+
+        const farmer = await farmerModel.findOne( query );
+
+        if ( !farmer )
+        {
+            return res.status( 404 ).json( {
+                status: false,
+                message: 'Farmer not found!'
+            } )
+        };
+
+        const token = jwt.sign(
+            { id: farmer._id, email: farmer.email }, "qwerty1234", { expiresIn: '24h' }
+        );
+
+        farmer.deviceToken = deviceToken;
+        farmer.socialLogin = true;
+        await farmer.save();
+
+        return res.status( 200 ).send( {
+            status: true,
+            message: "login successfully",
+            token: token,
+            data: farmer,
+        } );
     } catch ( error )
     {
         return res.status( 500 ).json( {
@@ -319,13 +512,47 @@ const updateProfile = async ( req, res ) =>
     }
 };
 
+// update farm details
+const updateFarmDetails = async ( req, res ) =>
+{
+    try
+    {
+        const { farmName, farmLocation, shippingAddress, billingAddress } = req.body;
+        const farmer = req.user;
+
+        farmer.farmName = farmName ? farmName : farmer.farmName;
+        farmer.farmLocation = farmLocation ? farmLocation : farmer.farmLocation;
+        farmer.shippingAddress = shippingAddress ? shippingAddress : farmer.shippingAddress;
+        farmer.billingAddress = billingAddress ? billingAddress : farmer.billingAddress;
+
+        await farmer.save();
+
+        return res.status( 200 ).json( {
+            status: true,
+            message: "data updated successfully",
+            data: farmer
+        } );
+    } catch ( error )
+    {
+        return res.status( 500 ).json( {
+            status: false,
+            message: error.message
+        } )
+    }
+};
+
 
 
 module.exports = {
     farmerSignUp,
     farmerLogin,
+    loginWithMobileNumber,
+    verifyVerificationCode,
     getProfile,
+    signInWithGoogle,
+    signInWithFacebook,
     updateProfile,
+    updateFarmDetails,
 };
 
 

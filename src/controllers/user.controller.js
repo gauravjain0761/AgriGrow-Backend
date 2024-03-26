@@ -60,12 +60,29 @@ const userLogin = async ( req, res ) =>
     {
         const { email, mobile, password, deviceToken } = req.body;
 
-        const user = await userModel.findOne( {
-            $or: [
-                { email: email },
-                { mobile: mobile }
-            ]
-        } );
+        let query = {};
+        if ( email )
+        {
+            query = { email: email.toLowerCase() };
+        } else if ( mobile )
+        {
+            query = { mobile: mobile };
+        } else
+        {
+            return res.status( 400 ).json( {
+                status: false,
+                message: "Email or mobile number is required."
+            } );
+        };
+
+        const user = await userModel.findOne( { $or: [ query ] } );
+        // console.log( user );
+        // const user = await userModel.findOne( {
+        //     $or: [
+        //         { email: email },
+        //         { mobile: mobile }
+        //     ]
+        // } );
 
         if ( !user )
         {
@@ -354,12 +371,24 @@ const signInWithFacebook = async ( req, res ) =>
     try
     {
         const { email, mobile, deviceToken } = req.body;
-        const user = await userModel.findOne( {
-            $or: [
-                { email: email.toLowerCase() },
-                { mobile: mobile },
-            ]
-        } );
+
+        let query = {};
+        if ( email )
+        {
+            query = { email: email.toLowerCase() };
+        } else if ( mobile )
+        {
+            query = { mobile: mobile };
+        } else
+        {
+            return res.status( 400 ).json( {
+                status: false,
+                message: "Email or mobile number is required."
+            } );
+        };
+
+        const user = await userModel.findOne( query );
+
 
         if ( !user )
         {

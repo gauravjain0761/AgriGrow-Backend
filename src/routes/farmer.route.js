@@ -17,17 +17,19 @@ router.post( '/login', farmerMiddleware.farmerLogin, controller.farmerLogin );
 
 // router.post( '/reset-password', farmerMiddleware.resetPassword, controller.resetPassword );
 
-// router.post( '/login-with-mobileNumber', farmerMiddleware.loginWithMobileNumber, controller.loginWithMobileNumber );
+router.post( '/login-with-mobileNumber', controller.loginWithMobileNumber );
 
-// router.post( '/verify-verification-code', farmerMiddleware.verifyVerificationCode, controller.verifyVerificationCode );
+router.post( '/verify-verification-code', controller.verifyVerificationCode );
 
-// router.post( '/signIn-with-google', farmerMiddleware.signInWithGoogle, controller.signInWithGoogle );
+router.post( '/signIn-with-google', controller.signInWithGoogle );
 
-// router.post( '/signIn-with-facebook', farmerMiddleware.signInWithFacebook, controller.signInWithFacebook );
+router.post( '/signIn-with-facebook', controller.signInWithFacebook );
 
 router.get( '/get-profile', passportAuthentication, farmerRoleMiddleware, controller.getProfile );
 
 router.patch( '/update-profile', passportAuthentication, farmerRoleMiddleware, controller.updateProfile );
+
+router.patch( '/update-farm-details', passportAuthentication, farmerRoleMiddleware, controller.updateFarmDetails );
 
 // router.patch( '/add-certificates', passportAuthentication, farmerRoleMiddleware, controller.addCertificates );
 

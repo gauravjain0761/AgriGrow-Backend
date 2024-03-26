@@ -121,18 +121,62 @@ exports.uploadCertificates = multer( {
 
 
 
+// const multer = require('multer');
 
-// {
-//     "name": "Aman Sharma Farmer",
-//     "email":"a@gmail.com",
-//     "password":"Aman@1234",
-//     "mobile":"80554405444",
-//     // "Aadhaar_Card_Number":"",
-//     // "PAN_Card_Number":"",
-//     "state":"Maharashtra",
-//     "city":"Nagpur",
-//     "postalCode":"440035",
-//     "streetAddress":"26, Ram Nagar, CA Road, Nagpur",
-//     "farmLocation":"Near Bhawani Mata Temple, Nagpur",
-//     "deviceToken": "nnjnsknk"
+// // Set storage engine
+// const storage = multer.diskStorage({
+//     destination: function(req, file, cb) {
+//         cb(null, './uploads/'); // Destination folder where uploaded files will be stored
+//     },
+//     filename: function(req, file, cb) {
+//         cb(null, `${Date.now()}-${file.originalname}`); // Set filename as current timestamp + original filename
+//     }
+// });
+
+// // Initialize multer upload
+// const upload = multer({
+//     storage: storage,
+//     limits: { fileSize: 1024 * 1024 * 5 }, // Limit file size to 5MB
+//     fileFilter: function(req, file, cb) {
+//         checkFileType(file, cb); // Function to check file type
+//     }
+// }).array('images', 3); // 'images' is the field name for uploading multiple images, and 3 is the maximum number of files allowed
+
+// // Check file type
+// function checkFileType(file, cb) {
+//     // Allowed filetypes
+//     const filetypes = /jpeg|jpg|png/;
+//     // Check extension
+//     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+//     // Check mime
+//     const mimetype = filetypes.test(file.mimetype);
+
+//     if (mimetype && extname) {
+//         return cb(null, true);
+//     } else {
+//         cb('Error: Images only (jpeg, jpg, png)!');
+//     }
 // }
+
+// // Middleware function for uploading images
+// const uploadImage = (req, res, next) => {
+//     upload(req, res, function(err) {
+//         if (err instanceof multer.MulterError) {
+//             // A Multer error occurred when uploading.
+//             return res.status(500).json({
+//                 status: false,
+//                 message: 'Multer error: ' + err.message
+//             });
+//         } else if (err) {
+//             // An unknown error occurred when uploading.
+//             return res.status(500).json({
+//                 status: false,
+//                 message: 'Unknown error: ' + err.message
+//             });
+//         }
+//         // Everything went fine.
+//         next();
+//     });
+// };
+
+// module.exports = uploadImage;

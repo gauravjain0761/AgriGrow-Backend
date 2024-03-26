@@ -21,6 +21,18 @@ const farmerModel = new mongoose.Schema(
             unique: true,
             default: null,
         },
+        otp: {
+            type: String,
+            default: null,
+        },
+        otpValidTill: {
+            type: Date,
+            default: null,
+        },
+        socialLogin: {
+            type: Boolean,
+            default: false,
+        },
         image: {
             type: String,
             default: null,
@@ -55,13 +67,25 @@ const farmerModel = new mongoose.Schema(
             type: String,
             default: null,
         },
+        farmName: {
+            type: String,
+            default: null,
+        },
         farmLocation: {
+            type: String,
+            default: null,
+        },
+        shippingAddress: {
+            type: String,
+            default: null,
+        },
+        billingAddress: {
             type: String,
             default: null,
         },
         role: {
             type: String,
-            enum: [ constants.ROLE.USER, constants.ROLE.FARMER ],
+            // enum: [ constants.ROLE.USER, constants.ROLE.FARMER ],
             default: constants.ROLE.FARMER,
         },
         certificates: {

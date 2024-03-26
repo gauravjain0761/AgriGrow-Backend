@@ -346,3 +346,82 @@ module.exports = {
 };
 
 
+
+
+
+
+
+
+// const addProduct = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const category = await categoryModel.findOne({ _id: id });
+//         if (!category) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: 'category data not found!'
+//             });
+//         };
+
+//         uploadImage(req, res, async (err) => {
+//             try {
+//                 if (err) {
+//                     return res.status(500).send({
+//                         status: false,
+//                         message: 'Error during file upload: ' + err.message,
+//                     });
+//                 };
+
+//                 const images = req.files; // Assuming multiple images are uploaded
+//                 if (!images || images.length === 0) {
+//                     return res.status(400).json({
+//                         status: false,
+//                         message: 'Please upload at least one image.',
+//                     });
+//                 } else if (images.length > 3) {
+//                     return res.status(400).json({
+//                         status: false,
+//                         message: 'Maximum of 3 images can be uploaded.',
+//                     });
+//                 }
+
+//                 const imageFilePaths = images.map(image => `/uploads/${moment().unix()}-${image.originalname}`);
+
+//                 const { name, description, price, discount, totalQuantity, bestDealOfferProduct } = req.body;
+
+//                 const product = new productModel({
+//                     farmerId: req.user._id,
+//                     categoryId: category.id,
+//                     category: category.name,
+//                     name: name,
+//                     description: description,
+//                     totalQuantity: totalQuantity,
+//                     availableQuantity: totalQuantity,
+//                     price: price,
+//                     totalPrice: price * totalQuantity,
+//                     discount: discount,
+//                     images: imageFilePaths, // Assuming 'images' field in your product model to store multiple images
+//                     bestDealOfferProduct: bestDealOfferProduct,
+//                     time: moment().unix()
+//                 });
+
+//                 await product.save();
+//                 return res.status(201).json({
+//                     status: true,
+//                     message: 'successfully created',
+//                     data: product
+//                 });
+//             } catch (error) {
+//                 return res.status(500).send({
+//                     status: false,
+//                     message: error.message,
+//                 });
+//             }
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message,
+//         });
+//     }
+// };

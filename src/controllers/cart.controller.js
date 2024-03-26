@@ -132,8 +132,8 @@ const updateCartProduct = async ( req, res ) =>
             } )
         };
 
-        console.log( 1111111, cartProduct );
-        console.table( cartProduct );
+        // console.log( 1111111, cartProduct );
+        // console.table( cartProduct );
         return res.status( 200 ).json( {
             status: true,
             message: 'all products in the cart fetched successfully',
@@ -155,7 +155,7 @@ const removeProductFromCart = async ( req, res ) =>
     {
         const { quantity } = req.body;
         const { id } = req.params;
-        console.log( id );
+        // console.log( id );
         const cartProduct = await cartModel.findOne( { _id: id, userId: req.user._id } );
         if ( !cartProduct )
         {
@@ -186,8 +186,8 @@ const removeProductFromCart = async ( req, res ) =>
         await cartProduct.save();
 
 
-        console.log( 1111111, cartProduct );
-        console.table( cartProduct );
+        // console.log( 1111111, cartProduct );
+        // console.table( cartProduct );
         return res.status( 200 ).json( {
             status: true,
             message: 'all products in the cart fetched successfully',
