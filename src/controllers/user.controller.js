@@ -219,7 +219,8 @@ const resetPassword = async ( req, res ) =>
         }
         const newEncryptPassword = crypto.AES.encrypt( newPassword, process.env.secretKey ).toString();
         user.password = newEncryptPassword;
-
+        user.otp = null;
+        user.otpValidTill = null;
         const newResetPassword = await user.save();
         return res.status( 200 ).send( {
             status: true,

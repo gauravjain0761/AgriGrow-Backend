@@ -2,7 +2,7 @@ const farmerModel = require( '../models/farmer.model' );
 const crypto = require( 'crypto-js' );
 const jwt = require( 'jsonwebtoken' );
 const { generateRandomNumber } = require( "../../helpers/randomNumber.helper" );
-// const { sendOtp } = require( "../../helpers/sendEmail.helper" );
+const { sendOtp } = require( "../../helpers/sendEmail.helper" );
 
 
 const { uploadProfileImage, uploadCertificates } = require( '../../helpers/multer' );
@@ -231,6 +231,113 @@ const farmerLogin = async ( req, res ) =>
             message: "login successfully",
             token: token,
             farmerData: farmer
+        } );
+    } catch ( error )
+    {
+        console.log( error );
+        return res.status( 500 ).send( {
+            status: false,
+            message: error.message,
+        } );
+    }
+};
+
+// send reset password otp to email
+const sendResetPasswordOtp = async ( req, res ) =>
+{
+    try
+    {
+        const { email } = req.body;
+
+        const farmer = await farmerModel.findOne( { email: email.toLowerCase() } );
+
+        if ( !farmer )
+        {
+            return res.status( 404 ).send( {
+                status: false,
+                message: "farmer Not Found!",
+            } );
+        };
+
+        const getOtp = generateRandomNumber( 4 );
+        farmer.otp = getOtp;
+        const otpValidTill = new Date();
+        otpValidTill.setMinutes( otpValidTill.getMinutes() + 10 );
+        farmer.otpValidTill = otpValidTill;
+
+        await farmer.save();
+        sendOtp( farmer );
+
+        return res.status( 200 ).send( {
+            status: true,
+            message: `Your OTP for Password Reset is send to ${ farmer.email } successfully`,
+        } );
+    } catch ( error )
+    {
+        console.log( error );
+        return res.status( 500 ).send( {
+            status: false,
+            message: error.message,
+        } );
+    }
+};
+
+// reset password
+const resetPassword = async ( req, res ) =>
+{
+    try
+    {
+        const { newPassword, confirmPassword, email, otp } = req.body;
+
+        const farmer = await farmerModel.findOne( { email: email.toLowerCase() } );
+        if ( !farmer )
+        {
+            return res.status( 404 ).send( {
+                status: false,
+                message: "farmer not found!"
+            } );
+        }
+        if ( farmer.otpValidTill < new Date() )
+        {
+            return res.status( 404 ).send( {
+                status: false,
+                message: "OTP valid for only 10 minutes, please use new OTP!"
+            } );
+        }
+        if ( farmer.otp !== otp )
+        {
+            return res.status( 404 ).send( {
+                status: false,
+                message: "OTP not matched!"
+            } );
+        }
+
+        const decryptedPass = crypto.AES.decrypt( farmer.password, process.env.secretKey ).toString( crypto.enc.Utf8 );
+        // console.log( decryptedPass );
+
+        if ( decryptedPass === newPassword )
+        {
+            return res.status( 400 ).send( {
+                status: false,
+                message: "Your new password matches your existing password, please choose another password."
+            } );
+        }
+        if ( newPassword !== confirmPassword )
+        {
+            return res.status( 400 ).send( {
+                status: false,
+                message: "Password not matched!"
+            } );
+        }
+        const newEncryptPassword = crypto.AES.encrypt( newPassword, process.env.secretKey ).toString();
+        farmer.password = newEncryptPassword;
+        farmer.otp = null;
+        farmer.otpValidTill = null;
+        const newResetPassword = await farmer.save();
+        return res.status( 200 ).send( {
+            status: true,
+            message: "Reset password successfully",
+            newPassword: newResetPassword,
         } );
     } catch ( error )
     {
@@ -546,6 +653,8 @@ const updateFarmDetails = async ( req, res ) =>
 module.exports = {
     farmerSignUp,
     farmerLogin,
+    sendResetPasswordOtp,
+    resetPassword,
     loginWithMobileNumber,
     verifyVerificationCode,
     getProfile,
