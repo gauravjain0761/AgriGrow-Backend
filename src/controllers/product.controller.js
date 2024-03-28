@@ -2,7 +2,7 @@ const categoryModel = require( '../models/category.model' );
 const productModel = require( '../models/product.model' );
 const cartModel = require( '../models/cart.model' );
 
-const { uploadImage } = require( '../../helpers/multer' );
+const { uploadProductImages } = require( '../../helpers/multer' );
 const fs = require( 'fs' );
 const path = require( 'path' );
 const moment = require( 'moment' );
@@ -22,8 +22,7 @@ const addProduct = async ( req, res ) =>
                 message: 'category data not found!'
             } )
         };
-
-        uploadImage( req, res, async ( err ) =>
+        uploadProductImages( req, res, async ( err ) =>
         {
             try
             {
@@ -35,23 +34,30 @@ const addProduct = async ( req, res ) =>
                     } );
                 };
 
-                const imageFilePath = req.file ? `/uploads/${ moment().unix() }-${ req.file.originalname }` : null;
-                const { name, description, price, discount, totalQuantity, bestDealOfferProduct } = req.body;
+                const images = req.files;
+
+                const imageFilePaths = images.map( image => `/uploads/productImages/${ moment().unix() }-${ image.originalname }` );
+
+                const { productName, description, originalPrice, offerPrice, discount, quantity,
+                    name, price } = req.body;
 
                 const product = new productModel( {
                     farmerId: req.user._id,
                     categoryId: category.id,
                     category: category.name,
-                    name: name,
+                    productName: productName,
                     description: description,
-                    totalQuantity: totalQuantity,
-                    availableQuantity: totalQuantity,
-                    price: price,
-                    totalPrice: price * totalQuantity,
+                    images: imageFilePaths,
+                    originalPrice: originalPrice,
+                    offerPrice: offerPrice,
                     discount: discount,
-                    image: imageFilePath,
-                    bestDealOfferProduct: bestDealOfferProduct,
-                    time: moment().unix()
+                    quantity: quantity,
+                    time: moment().unix(),
+                    // addOns: [ {
+                    //     image: 'imageFilePaths[ 0 ]',
+                    //     name: name,
+                    //     price: price
+                    // } ]
                 } );
 
                 await product.save();
@@ -62,6 +68,7 @@ const addProduct = async ( req, res ) =>
                 } );
             } catch ( error )
             {
+                console.log( error );
                 return res.status( 500 ).send( {
                     status: false,
                     message: error.message,
@@ -91,8 +98,7 @@ const updateProduct = async ( req, res ) =>
                 message: 'product data not found!'
             } )
         };
-
-        uploadImage( req, res, async ( err ) =>
+        uploadProductImages( req, res, async ( err ) =>
         {
             try
             {
@@ -104,27 +110,30 @@ const updateProduct = async ( req, res ) =>
                     } );
                 };
 
-                const { name, description, totalQuantity, price, discount, bestDealOfferProduct } = req.body;
-                if ( product.image )
+                const { productName, description, originalPrice, offerPrice, discount, quantity, } = req.body;
+
+                if ( product.images && product.images.length > 0 )
                 {
-                    const oldImagePath = path.join( __dirname, '../../', product.image );
-                    if ( fs.existsSync( oldImagePath ) )
+                    product.images.forEach( oldImagePath =>
                     {
-                        fs.unlinkSync( oldImagePath );
-                    }
+                        const absolutePath = path.join( __dirname, '../../', oldImagePath );
+                        if ( fs.existsSync( absolutePath ) )
+                        {
+                            fs.unlinkSync( absolutePath );
+                        }
+                    } );
                 };
 
-                const imageFilePath = req.file ? `/uploads/${ moment().unix() }-${ req.file.originalname }` : null;
+                const images = req.files;
+                const imageFilePaths = images.map( image => `/uploads/productImages/${ moment().unix() }-${ image.originalname }` );
 
-                product.name = name ? name : product.name;
+                product.productName = productName ? productName : product.productName;
                 product.description = description ? description : product.description;
-                product.totalQuantity = totalQuantity ? totalQuantity : product.totalQuantity;
-                product.availableQuantity = totalQuantity ? totalQuantity : product.availableQuantity;
-                product.price = price ? price : product.price;
-                product.totalPrice = price ? price * totalQuantity : product.totalPrice;
+                product.originalPrice = originalPrice ? originalPrice : product.originalPrice;
+                product.offerPrice = offerPrice ? offerPrice : product.offerPrice;
                 product.discount = discount ? discount : product.discount;
-                product.bestDealOfferProduct = bestDealOfferProduct ? bestDealOfferProduct : product.bestDealOfferProduct;
-                product.image = imageFilePath ? imageFilePath : product.image;
+                product.quantity = quantity ? quantity : product.quantity;
+                product.images = imageFilePaths ? imageFilePaths : product.images;
 
                 await product.save();
                 return res.status( 200 ).json( {
@@ -134,6 +143,7 @@ const updateProduct = async ( req, res ) =>
                 } );
             } catch ( error )
             {
+                console.log( error );
                 return res.status( 500 ).send( {
                     status: false,
                     message: error.message,
@@ -264,10 +274,10 @@ const searchProduct = async ( req, res ) =>
         //     // { name: { $regex: `^${ name }`, $options: 'i' }, isAvailable: true },
         // );
 
-        const { name, category } = req.body;
+        const { productName, category } = req.body;
         const product = await productModel.find( {
             $or: [
-                { name: { $regex: `${ name }`, $options: 'i' }, },
+                { productName: { $regex: `${ productName }`, $options: 'i' }, },
                 { category: { $regex: `${ category }`, $options: 'i' }, },
             ]
         } );
@@ -334,6 +344,58 @@ const productAllDetails = async ( req, res ) =>
     }
 };
 
+// delete product by Id
+const deleteProduct = async ( req, res ) =>
+{
+    try
+    {
+        const { productId } = req.params;
+
+        const product = await productModel.findOne( { _id: productId } );
+        if ( !product )
+        {
+            return res.status( 404 ).json( {
+                status: false,
+                message: "Product not found!",
+            } )
+        };
+
+        // if ( product.farmerId.toString() !== user._id.toString() )
+        if ( !product.farmerId.equals( req.user._id ) )
+        {
+            return res.status( 403 ).json( {
+                status: false,
+                message: "Only the farmer who created the product has access to delete it.",
+            } );
+        };
+
+        if ( product.images && product.images.length > 0 )
+        {
+            product.images.forEach( oldImagePath =>
+            {
+                const absolutePath = path.join( __dirname, '../../', oldImagePath );
+                if ( fs.existsSync( absolutePath ) )
+                {
+                    fs.unlinkSync( absolutePath );
+                }
+            } );
+        };
+
+        await productModel.findByIdAndDelete( productId );
+
+        return res.status( 200 ).send( {
+            status: true,
+            message: "Product Deleted Successfully",
+        } );
+    } catch ( error )
+    {
+        console.log( error );
+        return res.status( 500 ).json( {
+            status: false,
+            message: error.message
+        } )
+    }
+};
 
 module.exports = {
     addProduct,
@@ -343,6 +405,7 @@ module.exports = {
     getProductDetails,
     searchProduct,
     productAllDetails,
+    deleteProduct
 };
 
 
