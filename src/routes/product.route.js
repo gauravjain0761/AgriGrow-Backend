@@ -9,6 +9,8 @@ const { farmerRoleMiddleware } = require( '../../config/userRoleMiddleware' );
 
 router.post( '/add-product/:id', /* productMiddleware.addProduct, */ passportAuthentication, farmerRoleMiddleware, controller.addProduct );
 
+// router.post( '/product-addOns/:productId', passportAuthentication, farmerRoleMiddleware, controller.productAddOns );
+
 router.post( '/update-product/:id', /* productMiddleware.addProduct, */ passportAuthentication, farmerRoleMiddleware, controller.updateProduct );
 
 router.get( '/get-all-products', passportAuthentication, controller.getAllProducts );

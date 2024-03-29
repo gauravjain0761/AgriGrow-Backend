@@ -70,6 +70,10 @@ const farmerSignUp = async ( req, res ) =>
                 const { name, email, password, mobile, Aadhaar_Card_Number, PAN_Card_Number,
                     state, city, postalCode, streetAddress, farmLocation, village, deviceToken } = req.body;
 
+                const Aadhaar_Card_Front = req.files.Aadhaar_Card_Front ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files.Aadhaar_Card_Front[ 0 ].originalname }` : null;
+                const Aadhaar_Card_Back = req.files.Aadhaar_Card_Back ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files.Aadhaar_Card_Back[ 0 ].originalname }` : null;
+                const PAN_Card = req.files.PAN_Card ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files.PAN_Card[ 0 ].originalname }` : null;
+
                 const farmer = new farmerModel( {
                     name: name,
                     email: email.toLowerCase(),
@@ -84,18 +88,21 @@ const farmerSignUp = async ( req, res ) =>
                     farmLocation: farmLocation,
                     deviceToken: deviceToken,
                     village: village,
+                    Aadhaar_Card_Front: Aadhaar_Card_Front,
+                    Aadhaar_Card_Back: Aadhaar_Card_Back,
+                    PAN_Card: PAN_Card,
                 } );
 
-                const certificates = {};
-                if ( req.files )
-                {
-                    certificates.Aadhaar_Card_Front = req.files[ 'Aadhaar_Card_Front' ] ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files[ 'Aadhaar_Card_Front' ][ 0 ].originalname }` : null;
-                    certificates.Aadhaar_Card_Back = req.files[ 'Aadhaar_Card_Back' ] ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files[ 'Aadhaar_Card_Back' ][ 0 ].originalname }` : null;
-                    certificates.PAN_Card = req.files[ 'PAN_Card' ] ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files[ 'PAN_Card' ][ 0 ].originalname }` : null;
-                    // certificates.PAN_Card = req.files[ 'PAN_Card' ] ? req.files[ 'PAN_Card' ][ 0 ].path : null;
-                };
+                // const certificates = {};
+                // if ( req.files )
+                // {
+                //     certificates.Aadhaar_Card_Front = req.files[ 'Aadhaar_Card_Front' ] ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files[ 'Aadhaar_Card_Front' ][ 0 ].originalname }` : null;
+                //     certificates.Aadhaar_Card_Back = req.files[ 'Aadhaar_Card_Back' ] ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files[ 'Aadhaar_Card_Back' ][ 0 ].originalname }` : null;
+                //     certificates.PAN_Card = req.files[ 'PAN_Card' ] ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files[ 'PAN_Card' ][ 0 ].originalname }` : null;
+                //     // certificates.PAN_Card = req.files[ 'PAN_Card' ] ? req.files[ 'PAN_Card' ][ 0 ].path : null;
+                // };
 
-                farmer.certificates = certificates;
+                // farmer.certificates = certificates;
 
                 await farmer.save();
                 return res.status( 201 ).send( {
@@ -648,6 +655,86 @@ const updateFarmDetails = async ( req, res ) =>
     }
 };
 
+// add certificates
+const addCertificates = async ( req, res ) =>
+{
+    try
+    {
+        const user = await req.user;
+        uploadCertificates( req, res, async ( err ) =>
+        {
+            try
+            {
+                if ( err )
+                {
+                    return res.status( 500 ).send( {
+                        status: false,
+                        message: 'Error during file upload: ' + err.message,
+                    } );
+                };
+
+                // const { name, email, mobile } = req.body;
+                // if ( user.image )
+                // {
+                //     const oldImagePath = path.join( __dirname, '../../', user.image );
+                //     // const oldImagePath = path.join( __dirname, '../../', user.image );
+                //     if ( fs.existsSync( oldImagePath ) )
+                //     {
+                //         fs.unlinkSync( oldImagePath );
+                //     }
+                // };
+
+                const India_Organic_Certificate = req.files.India_Organic_Certificate ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files.India_Organic_Certificate[ 0 ].originalname }` : null;
+                const Organic_Farmer_And_Growers = req.files.Organic_Farmer_And_Growers ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files.Organic_Farmer_And_Growers[ 0 ].originalname }` : null;
+                const National_Program_For_Sustainable_Aquaculture = req.files.National_Program_For_Sustainable_Aquaculture ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files.National_Program_For_Sustainable_Aquaculture[ 0 ].originalname }` : null;
+                const Spices_BoardOrganic_Certification = req.files.Spices_BoardOrganic_Certification ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files.Spices_BoardOrganic_Certification[ 0 ].originalname }` : null;
+                const Fair_Trade_India_Certification = req.files.Fair_Trade_India_Certification ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files.Fair_Trade_India_Certification[ 0 ].originalname }` : null;
+                const India_Good_Agricultural_Practices = req.files.India_Good_Agricultural_Practices ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files.India_Good_Agricultural_Practices[ 0 ].originalname }` : null;
+                const Participatory_Guarantee_System = req.files.Participatory_Guarantee_System ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files.Participatory_Guarantee_System[ 0 ].originalname }` : null;
+                const National_Programme_On_Organic_Production = req.files.National_Programme_On_Organic_Production ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files.National_Programme_On_Organic_Production[ 0 ].originalname }` : null;
+                const Bureau_Of_Indian_Standards = req.files.Bureau_Of_Indian_Standards ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files.Bureau_Of_Indian_Standards[ 0 ].originalname }` : null;
+                const Rainfed_Area_Authority = req.files.Rainfed_Area_Authority ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files.Rainfed_Area_Authority[ 0 ].originalname }` : null;
+                const Any_Other_Certificate = req.files.Any_Other_Certificate ? `/uploads/farmerCertificates/${ moment().unix() }-${ req.files.Any_Other_Certificate[ 0 ].originalname }` : null;
+
+
+
+                
+                user.India_Organic_Certificate = India_Organic_Certificate ? India_Organic_Certificate : user.India_Organic_Certificate;
+                user.Organic_Farmer_And_Growers = Organic_Farmer_And_Growers ? Organic_Farmer_And_Growers : user.Organic_Farmer_And_Growers;
+                user.National_Program_For_Sustainable_Aquaculture = National_Program_For_Sustainable_Aquaculture ? National_Program_For_Sustainable_Aquaculture : user.National_Program_For_Sustainable_Aquaculture;
+                user.Spices_BoardOrganic_Certification = Spices_BoardOrganic_Certification ? Spices_BoardOrganic_Certification : user.Spices_BoardOrganic_Certification;
+                user.Fair_Trade_India_Certification = Fair_Trade_India_Certification ? Fair_Trade_India_Certification : user.Fair_Trade_India_Certification;
+                user.India_Good_Agricultural_Practices = India_Good_Agricultural_Practices ? India_Good_Agricultural_Practices : user.India_Good_Agricultural_Practices;
+                user.Participatory_Guarantee_System = Participatory_Guarantee_System ? Participatory_Guarantee_System : user.Participatory_Guarantee_System;
+                user.National_Programme_On_Organic_Production = National_Programme_On_Organic_Production ? National_Programme_On_Organic_Production : user.National_Programme_On_Organic_Production;
+                user.Bureau_Of_Indian_Standards = Bureau_Of_Indian_Standards ? Bureau_Of_Indian_Standards : user.Bureau_Of_Indian_Standards;
+                user.Rainfed_Area_Authority = Rainfed_Area_Authority ? Rainfed_Area_Authority : user.Rainfed_Area_Authority;
+                user.Any_Other_Certificate = Any_Other_Certificate ? Any_Other_Certificate : user.Any_Other_Certificate;
+
+                await user.save();
+
+                return res.status( 200 ).json( {
+                    status: true,
+                    message: "certificates added successfully",
+                    data: user
+                } );
+            } catch ( error )
+            {
+                console.log( error );
+                return res.status( 500 ).send( {
+                    status: false,
+                    message: error.message,
+                } );
+            }
+        } );
+    } catch ( error )
+    {
+        return res.status( 500 ).json( {
+            status: false,
+            message: error.message
+        } )
+    }
+};
 
 
 module.exports = {
@@ -662,6 +749,7 @@ module.exports = {
     signInWithFacebook,
     updateProfile,
     updateFarmDetails,
+    addCertificates,
 };
 
 

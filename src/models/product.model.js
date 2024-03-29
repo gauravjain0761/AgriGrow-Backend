@@ -44,26 +44,26 @@ const productModel = new mongoose.Schema(
         },
         quantity: {
             type: Number,
-            default: 0,
+            default: 1,
         },
-        addOns: {
-            type: [ {
-                image: {
-                    type: String,
-                    default: null,
-                },
-                name: {
-                    type: String,
-                    required: true,
-                    default: null,
-                },
-                price: {
-                    type: Number,
-                    required: true,
-                    default: 0,
-                },
-            } ]
-        },
+        // addOns: {
+        //     type: [ {
+        //         image: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //         name: {
+        //             type: String,
+        //             required: true,
+        //             default: null,
+        //         },
+        //         price: {
+        //             type: Number,
+        //             required: true,
+        //             default: 0,
+        //         },
+        //     } ]
+        // },
         status: {
             type: String,
             enum: [ constants.STATUS.AVAILABLE, constants.STATUS.SOLD ],

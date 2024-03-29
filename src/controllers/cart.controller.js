@@ -1,3 +1,4 @@
+const addOnsProductModel = require( '../models/addOnsProduct.model' );
 const cartModel = require( '../models/cart.model' );
 const productModel = require( '../models/product.model' );
 const moment = require( 'moment' );
@@ -9,6 +10,13 @@ const addProductToCart = async ( req, res ) =>
     {
         const user = req.user;
         const { productId, quantity } = req.body;
+        if ( !productId || !quantity )
+        {
+            return res.status( 400 ).json( {
+                status: false,
+                message: "please provide both productId & quantity"
+            } )
+        };
 
         const product = await productModel.findOne( { _id: productId } );
         if ( !product )
@@ -25,21 +33,21 @@ const addProductToCart = async ( req, res ) =>
                 message: 'please add minimum 1 quantity'
             } )
         };
-        if ( product.availableQuantity < quantity )
-        {
-            return res.status( 400 ).json( {
-                status: false,
-                message: `available product quantity is ${ product.availableQuantity }`
-            } )
-        };
+        // if ( product.availableQuantity < quantity )
+        // {
+        //     return res.status( 400 ).json( {
+        //         status: false,
+        //         message: `available product quantity is ${ product.availableQuantity }`
+        //     } )
+        // };
 
-        const totalPrice = quantity * product.price;
+        // const totalPrice = quantity * product.price;
         const addProduct = new cartModel( {
             userId: user._id,
             productId: productId,
             farmerId: product.farmerId,
             quantity: quantity,
-            totalPrice: totalPrice,
+            // totalPrice: totalPrice,
             time: moment().unix()
         } );
 
@@ -51,8 +59,19 @@ const addProductToCart = async ( req, res ) =>
             } )
         };
 
-        product.availableQuantity = product.availableQuantity - quantity;
-        await product.save();
+        // product.availableQuantity = product.availableQuantity - quantity;
+        // await product.save();
+
+
+        // const addOnProducts = await addOnsProductModel.find( { _id: { $in: req.body.addOnsProductIds } } );
+        // if ( !addOnProducts )
+        // {
+        //     return res.status( 404 ).json( {
+        //         status: false,
+        //         message: 'addOn product not found'
+        //     } )
+        // };
+
 
         await addProduct.save();
         return res.status( 201 ).json( {

@@ -31,7 +31,7 @@ router.patch( '/update-profile', passportAuthentication, farmerRoleMiddleware, c
 
 router.patch( '/update-farm-details', passportAuthentication, farmerRoleMiddleware, controller.updateFarmDetails );
 
-// router.patch( '/add-certificates', passportAuthentication, farmerRoleMiddleware, controller.addCertificates );
+router.patch( '/add-certificates', passportAuthentication, farmerRoleMiddleware, controller.addCertificates );
 
 // router.post( '/logOut', passportAuthentication, controller.farmerLogOut );
 

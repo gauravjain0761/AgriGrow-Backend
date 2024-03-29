@@ -27,8 +27,3 @@ module.exports = router;
 
 
 
-
-
-// +91 8055440544
-// 📧 amannsharma16@gmail.com
-// 💼 www.linkedin.com/in/aman-sharma09/

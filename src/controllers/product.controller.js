@@ -84,6 +84,73 @@ const addProduct = async ( req, res ) =>
     }
 };
 
+// // add addOns product on product data
+// const productAddOns = async ( req, res ) =>
+// {
+//     try
+//     {
+//         const { productId } = req.params;
+//         const product = await productModel.findOne( { _id: productId } );
+//         if ( !product )
+//         {
+//             return res.status( 404 ).json( {
+//                 status: false,
+//                 message: 'product data not found!'
+//             } )
+//         };
+//         uploadAddOnImage( req, res, async ( err ) =>
+//         {
+//             try
+//             {
+//                 if ( err )
+//                 {
+//                     return res.status( 500 ).send( {
+//                         status: false,
+//                         message: 'Error during file upload: ' + err.message,
+//                     } );
+//                 };
+
+//                 const { name, price } = req.body;
+//                 if ( !name || !price )
+//                 {
+//                     return res.json( {
+//                         status: false,
+//                         message: "field can't be empty"
+//                     } )
+//                 }
+
+//                 const imageFilePath = req.file ? `/uploads/productImages/addOnImages/${ moment().unix() }-${ req.file.originalname }` : null;
+
+//                 product.addOns.push( {
+//                     image: imageFilePath,
+//                     name: name,
+//                     price: price
+//                 } );
+
+//                 await product.save();
+//                 return res.status( 201 ).json( {
+//                     status: true,
+//                     message: 'successfully data addOn on product',
+//                     data: product
+//                 } );
+//             } catch ( error )
+//             {
+//                 console.log( error );
+//                 return res.status( 500 ).send( {
+//                     status: false,
+//                     message: error.message,
+//                 } );
+//             }
+//         } );
+//     } catch ( error )
+//     {
+//         return res.status( 500 ).json( {
+//             status: false,
+//             message: error.message,
+//         } );
+//     }
+// };
+
 // updateProduct
 const updateProduct = async ( req, res ) =>
 {
@@ -399,6 +466,7 @@ const deleteProduct = async ( req, res ) =>
 
 module.exports = {
     addProduct,
+    // productAddOns,
     updateProduct,
     getAllProducts,
     getAllBestDealProducts,
@@ -488,3 +556,16 @@ module.exports = {
 //         });
 //     }
 // };
+
+
+
+
+// const { v4: uuidv4 } = require('uuid');
+
+// function generateOrderId() {
+//   return `#${uuidv4().replace(/-/g, '')}`;
+// }
+
+// // Example usage:
+// const orderId = generateOrderId();
+// console.log(orderId); // Output: #4b16a74e01cf4b988d910086ad902812

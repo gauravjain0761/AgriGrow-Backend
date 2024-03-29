@@ -88,66 +88,123 @@ const farmerModel = new mongoose.Schema(
             // enum: [ constants.ROLE.USER, constants.ROLE.FARMER ],
             default: constants.ROLE.FARMER,
         },
-        certificates: {
-            type: [ {
-                Aadhaar_Card_Front: {
-                    type: String,
-                    default: null,
-                },
-                Aadhaar_Card_Back: {
-                    type: String,
-                    default: null,
-                },
-                PAN_Card: {
-                    type: String,
-                    default: null,
-                },
-                India_Organic_Certificate: {
-                    type: String,
-                    default: null,
-                },
-                Organic_Farmer_And_Growers: {
-                    type: String,
-                    default: null,
-                },
-                National_Program_For_Sustainable_Aquaculture: {
-                    type: String,
-                    default: null,
-                },
-                Spices_BoardOrganic_Certification: {
-                    type: String,
-                    default: null,
-                },
-                Fair_Trade_India_Certification: {
-                    type: String,
-                    default: null,
-                },
-                India_Good_Agricultural_Practices: {
-                    type: String,
-                    default: null,
-                },
-                Participatory_Guarantee_System: {
-                    type: String,
-                    default: null,
-                },
-                National_Programme_On_Organic_Production: {
-                    type: String,
-                    default: null,
-                },
-                Bureau_Of_Indian_Standards: {
-                    type: String,
-                    default: null,
-                },
-                Rainfed_Area_Authority: {
-                    type: String,
-                    default: null,
-                },
-                Any_Other_Certificate: {
-                    type: String,
-                    default: null,
-                },
-            } ]
+        Aadhaar_Card_Front: {
+            type: String,
+            default: null,
         },
+        Aadhaar_Card_Back: {
+            type: String,
+            default: null,
+        },
+        PAN_Card: {
+            type: String,
+            default: null,
+        },
+        India_Organic_Certificate: {
+            type: String,
+            default: null,
+        },
+        Organic_Farmer_And_Growers: {
+            type: String,
+            default: null,
+        },
+        National_Program_For_Sustainable_Aquaculture: {
+            type: String,
+            default: null,
+        },
+        Spices_BoardOrganic_Certification: {
+            type: String,
+            default: null,
+        },
+        Fair_Trade_India_Certification: {
+            type: String,
+            default: null,
+        },
+        India_Good_Agricultural_Practices: {
+            type: String,
+            default: null,
+        },
+        Participatory_Guarantee_System: {
+            type: String,
+            default: null,
+        },
+        National_Programme_On_Organic_Production: {
+            type: String,
+            default: null,
+        },
+        Bureau_Of_Indian_Standards: {
+            type: String,
+            default: null,
+        },
+        Rainfed_Area_Authority: {
+            type: String,
+            default: null,
+        },
+        Any_Other_Certificate: {
+            type: String,
+            default: null,
+        },
+
+        // certificates: {
+        //     type: [ {
+        //         Aadhaar_Card_Front: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //         Aadhaar_Card_Back: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //         PAN_Card: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //         India_Organic_Certificate: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //         Organic_Farmer_And_Growers: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //         National_Program_For_Sustainable_Aquaculture: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //         Spices_BoardOrganic_Certification: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //         Fair_Trade_India_Certification: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //         India_Good_Agricultural_Practices: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //         Participatory_Guarantee_System: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //         National_Programme_On_Organic_Production: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //         Bureau_Of_Indian_Standards: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //         Rainfed_Area_Authority: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //         Any_Other_Certificate: {
+        //             type: String,
+        //             default: null,
+        //         },
+        //     } ]
+        // },
         deviceToken: {
             type: String,
             default: null,

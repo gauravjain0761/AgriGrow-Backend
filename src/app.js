@@ -21,6 +21,7 @@ mongoose.connection.on( 'open', () =>
 const userRoutes = require( './routes/user.route' );
 const farmerRoutes = require( './routes/farmer.route' );
 const productRoutes = require( './routes/product.route' );
+const addOnsProductRoutes = require( './routes/addOnsProduct.route' );
 const favoriteProductRoutes = require( './routes/favoriteProduct.route' );
 const cartRoutes = require( './routes/cart.route' );
 const cityRoutes = require( './routes/city.route' );
@@ -30,6 +31,7 @@ const feedbackRoutes = require( './routes/feedback.route' );
 app.use( '/api/v1/user', userRoutes );
 app.use( '/api/v1/farmer', farmerRoutes );
 app.use( '/api/v1/product', productRoutes );
+app.use( '/api/v1/addOnsProduct', addOnsProductRoutes );
 app.use( '/api/v1/favoriteProduct', favoriteProductRoutes );
 app.use( '/api/v1/cart', cartRoutes );
 app.use( '/api/v1/city', cityRoutes );
@@ -56,3 +58,8 @@ app.listen( Port, () =>
 
 
 
+// product available quantity is not shown in product details screen
+// product quantity clarification is important with Sir
+//
+
+// update category APIS
