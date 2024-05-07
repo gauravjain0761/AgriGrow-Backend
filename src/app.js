@@ -27,6 +27,7 @@ const cityRoutes = require('./routes/city.route');
 const categoryRoutes = require('./routes/category.route');
 const feedbackRoutes = require('./routes/feedback.route');
 const collectionCenterRoutes = require('./routes/collectionCenter.route');
+const vehicleRoutes = require('./routes/vehicle.route');
 
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/farmer', farmerRoutes);
@@ -38,6 +39,7 @@ app.use('/api/v1/city', cityRoutes);
 app.use('/api/v1/category', categoryRoutes);
 app.use('/api/v1/feedback', feedbackRoutes);
 app.use('/api/v1/collectionCenter', collectionCenterRoutes);
+app.use('/api/v1/vehicle', vehicleRoutes);
 
 
 app.use('/uploads', express.static('uploads'));
@@ -63,3 +65,8 @@ app.listen(Port, () => {
 //
 
 // update category APIS
+
+
+// farmer & cutomer -----> both become collection center
+// single user have only 1 collection center
+

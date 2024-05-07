@@ -1,6 +1,7 @@
 const multer = require('multer');
 const path = require('path');
 const moment = require('moment');
+const fs = require('fs');
 
 // -------------------------------------------------------------------------------------
 
@@ -140,3 +141,54 @@ exports.uploadCollectionCenterImages = multer({
 
 
 // --------------------------------------------------------------------------------
+
+
+const vehicleImagesStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../uploads/vehicleImages/'));
+    },
+    filename: function (req, file, cb) {
+        // console.log( file );
+        cb(null, moment().unix() + "-" + file.originalname);
+    },
+});
+
+exports.vehicleImages = multer({
+    storage: vehicleImagesStorage,
+    limits: {
+        fileSize: 5 * 1024 * 1024,
+    },
+}).fields([
+    { name: 'RC_BookImage', maxCount: 1 },
+    { name: 'vehicleImage', maxCount: 1 },
+]);
+
+
+// -------------------------------------------------------------------------------------
+
+exports.deleteUploadedFiles = (files) => {
+    if (!files) return;
+    for (const file of Object.values(files)) {
+        if (Array.isArray(file)) {
+            for (const f of file) {
+                fs.unlink(f.path, (err) => {
+                    if (err) {
+                        console.error('Error deleting file:', err);
+                    } else {
+                        console.log('File deleted successfully:', f.path);
+                    }
+                });
+            }
+        } else {
+            fs.unlink(file.path, (err) => {
+                if (err) {
+                    console.error('Error deleting file:', err);
+                } else {
+                    console.log('File deleted successfully:', file.path);
+                }
+            });
+        }
+    }
+};
+
+// -------------------------------------------------------------------------------------------
