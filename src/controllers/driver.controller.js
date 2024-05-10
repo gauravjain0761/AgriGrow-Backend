@@ -1,14 +1,15 @@
-const vehicleModel = require('../models/vehicle.model');
-const { vehicleImages, deleteUploadedFiles } = require('../../helpers/multer');
-const moment = require('moment');
-const path = require('path');
+const driverModel = require('../models/driver.model');
+
+const { driverImages, deleteUploadedFiles } = require('../../helpers/multer');
 const fs = require('fs');
+const path = require('path');
+const moment = require('moment');
 
 
-// add vehicle
-exports.addVehicle = async (req, res) => {
+// add driver
+exports.addDriver = async (req, res) => {
     try {
-        vehicleImages(req, res, async (err) => {
+        driverImages(req, res, async (err) => {
             try {
                 // console.log( 2222, req.files );
                 if (err) {
@@ -21,32 +22,41 @@ exports.addVehicle = async (req, res) => {
                 };
 
                 const user = req.user;
-                const { vehicleName, vehicleType, make, model, year, VIN_Number } = req.body;
+                const { name, email, mobile, licenseNumber, aadhaarCardNumber } = req.body;
 
-                const RC_BookImage = req.files.RC_BookImage ? `/uploads/vehicleImages/${moment().unix()}-${req.files.RC_BookImage[0].originalname}` : null;
-                const vehicleImage = req.files.vehicleImage ? `/uploads/vehicleImages/${moment().unix()}-${req.files.vehicleImage[0].originalname}` : null;
+                const aadhaarCardFront = req.files.aadhaarCardFront ? `/uploads/driverImages/${moment().unix()}-${req.files.aadhaarCardFront[0].originalname}` : null;
+                const aadhaarCardBack = req.files.aadhaarCardBack ? `/uploads/driverImages/${moment().unix()}-${req.files.aadhaarCardBack[0].originalname}` : null;
+                const licenseImage = req.files.licenseImage ? `/uploads/driverImages/${moment().unix()}-${req.files.licenseImage[0].originalname}` : null;
 
-                const vehicle = new vehicleModel({
+                const driver = new driverModel({
                     userId: user._id,
-                    vehicleName: vehicleName,
-                    vehicleType: vehicleType,
-                    make: make,
-                    model: model,
-                    year: year,
-                    VIN_Number: VIN_Number,
-                    RC_BookImage: RC_BookImage,
-                    vehicleImage: vehicleImage,
+                    name: name,
+                    email: email,
+                    mobile: mobile,
+                    licenseNumber: licenseNumber,
+                    aadhaarCardNumber: aadhaarCardNumber,
+                    aadhaarCardFront: aadhaarCardFront,
+                    aadhaarCardBack: aadhaarCardBack,
+                    licenseImage: licenseImage
                 });
 
-                await vehicle.save();
-                return res.status(201).send({
+                await driver.save();
+                return res.status(201).json({
                     status: true,
-                    message: 'successfully created',
-                    data: vehicle
+                    message: 'register to new collection center successfully',
+                    data: driver
                 });
             } catch (error) {
                 deleteUploadedFiles(req.files);
                 console.log(error);
+                // if (error.code === 11000 && error.keyPattern && (error.keyPattern.email || error.keyPattern.mobile)) {
+                //     const violatedKeys = Object.keys(error.keyPattern);
+                //     console.log(violatedKeys);
+                //     return res.status(400).json({
+                //         status: false,
+                //         message: `${violatedKeys} is already registered. Please use a different ${violatedKeys}.`,
+                //     });
+                // }
                 return res.status(500).send({
                     status: false,
                     message: error.message,
@@ -54,39 +64,40 @@ exports.addVehicle = async (req, res) => {
             }
         });
     } catch (error) {
-        return res.status(500).send({
+        return res.status(500).json({
             status: false,
-            message: error.message,
-        });
+            message: error.message
+        })
     }
 };
 
 
-// all vehicle list
-exports.allVehicleList = async (req, res) => {
+// all driver list
+exports.allDriverList = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
+        const user = req.user;
 
-        const vehicle = await vehicleModel.find({ userId: req.user._id, isAvailable: true })
+        const driver = await driverModel.find({ userId: user._id, isAvailable: true })
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
             .exec();
 
-        if (!vehicle) {
+        if (!driver) {
             return res.status(404).json({
                 status: false,
                 message: "not found!",
             })
         };
-        const totalDocuments = await vehicleModel.countDocuments({ userId: req.user._id, isAvailable: true });
+        const totalDocuments = await driverModel.countDocuments({ userId: user._id, isAvailable: true })
 
         return res.status(200).json({
             status: true,
             message: 'successfully fetched',
             totalDocuments: totalDocuments,
-            data: vehicle
+            data: driver
         });
     } catch (error) {
         return res.status(500).json({
@@ -96,13 +107,16 @@ exports.allVehicleList = async (req, res) => {
     }
 };
 
-// get vehicle details
-exports.getVehicleDetailsById = async (req, res) => {
-    try {
-        const vehicleId = req.params.vehicleId;
-        const vehicle = await vehicleModel.findOne({ _id: vehicleId, userId: req.user._id });
 
-        if (!vehicle) {
+// get driver details
+exports.getDriverDetailsById = async (req, res) => {
+    try {
+        const driverId = req.params.driverId;
+        const user = req.user;
+
+        const driver = await driverModel.findOne({ _id: driverId, userId: user._id });
+
+        if (!driver) {
             return res.status(404).json({
                 status: false,
                 message: "not found!",
@@ -112,7 +126,7 @@ exports.getVehicleDetailsById = async (req, res) => {
         return res.status(200).json({
             status: true,
             message: 'successfully fetched',
-            data: vehicle
+            data: driver
         });
     } catch (error) {
         return res.status(500).json({
@@ -123,23 +137,24 @@ exports.getVehicleDetailsById = async (req, res) => {
 };
 
 
-// search vehicle
-exports.searchVehicle = async (req, res) => {
+// search driver
+exports.searchDriver = async (req, res) => {
     try {
         const { data } = req.query;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
+        const user = req.user;
 
-        const vehicle = await vehicleModel.find({
+        const driver = await driverModel.find({
             $or: [
-                { vehicleName: { $regex: data, $options: 'i' }, },
-                { VIN_Number: { $regex: data, $options: 'i' }, },
+                { name: { $regex: data, $options: 'i' }, },
+                { mobile: { $regex: data, $options: 'i' }, },
             ],
-            userId: req.user._id
+            userId: user._id
         })
             .sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).exec();
 
-        if (!vehicle) {
+        if (!driver) {
             return res.status(404).json({
                 status: false,
                 message: 'not found!'
@@ -149,7 +164,7 @@ exports.searchVehicle = async (req, res) => {
         return res.status(200).json({
             status: true,
             message: 'searched successfully',
-            data: vehicle
+            data: driver
         });
     } catch (error) {
         console.log(error);
@@ -161,29 +176,21 @@ exports.searchVehicle = async (req, res) => {
 };
 
 
-// remove vehicle by Id
-exports.removeVehicle = async (req, res) => {
+// remove driver by Id
+exports.removeDriver = async (req, res) => {
     try {
-        const { vehicleId } = req.params;
+        const { driverId } = req.params;
 
-        const vehicle = await vehicleModel.findOne({ _id: vehicleId, userId: req.user._id });
-        if (!vehicle) {
+        const driver = await driverModel.findOne({ _id: driverId, userId: user._id });
+        if (!driver) {
             return res.status(404).json({
                 status: false,
-                message: "vehicle not found!",
+                message: "driver not found!",
             })
         };
 
-        // if ( vehicle.farmerId.toString() !== user._id.toString() )
-        if (!vehicle.userId.equals(req.user._id)) {
-            return res.status(403).json({
-                status: false,
-                message: "access denied",
-            });
-        };
-
         // Delete images from the filesystem
-        const imagePaths = [vehicle.RC_BookImage, vehicle.vehicleImage];
+        const imagePaths = [driver.aadhaarCardFront, driver.aadhaarCardBack, driver.licenseImage];
         for (const imagePath of imagePaths) {
             if (imagePath) {
                 const absolutePath = path.join(__dirname, `../../${imagePath}`);
@@ -192,26 +199,12 @@ exports.removeVehicle = async (req, res) => {
                     await fs.promises.unlink(absolutePath); // Use fs.promises.unlink instead of fs.unlink
                 }
             }
-        }
+        };
 
-        // if (vehicle.RC_BookImage) {
-        //     const absolutePath = path.join(__dirname, `../../${vehicle.RC_BookImage}`);
-        //     if (fs.existsSync(absolutePath)) {
-        //         fs.unlinkSync(absolutePath);
-        //     }
-        // };
-
-        // if (vehicle.vehicleImage) {
-        //     const absolutePath = path.join(__dirname, `../../${vehicle.vehicleImage}`);
-        //     if (fs.existsSync(absolutePath)) {
-        //         fs.unlinkSync(absolutePath);
-        //     }
-        // };
-
-        await vehicleModel.findByIdAndDelete(vehicleId);
+        await driverModel.findByIdAndDelete(driverId);
         return res.status(200).send({
             status: true,
-            message: "vehicle deleted successfully",
+            message: "driver deleted successfully",
         });
     } catch (error) {
         console.log(error);
@@ -221,6 +214,3 @@ exports.removeVehicle = async (req, res) => {
         })
     }
 };
-
-
-

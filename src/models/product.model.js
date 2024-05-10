@@ -66,8 +66,8 @@ const productModel = new mongoose.Schema(
         // },
         status: {
             type: String,
-            enum: [ constants.STATUS.AVAILABLE, constants.STATUS.SOLD ],
-            default: constants.STATUS.AVAILABLE,
+            enum: [ constants.PRODUCT_STATUS.AVAILABLE, constants.PRODUCT_STATUS.SOLD ],
+            default: constants.PRODUCT_STATUS.AVAILABLE,
         },
         // bestDealOfferProduct: {
         //     type: Boolean,

@@ -28,6 +28,8 @@ const categoryRoutes = require('./routes/category.route');
 const feedbackRoutes = require('./routes/feedback.route');
 const collectionCenterRoutes = require('./routes/collectionCenter.route');
 const vehicleRoutes = require('./routes/vehicle.route');
+const driverRoutes = require('./routes/driver.route');
+const orderRoutes = require('./routes/order.route');
 
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/farmer', farmerRoutes);
@@ -40,6 +42,8 @@ app.use('/api/v1/category', categoryRoutes);
 app.use('/api/v1/feedback', feedbackRoutes);
 app.use('/api/v1/collectionCenter', collectionCenterRoutes);
 app.use('/api/v1/vehicle', vehicleRoutes);
+app.use('/api/v1/driver', driverRoutes);
+app.use('/api/v1/order', orderRoutes);
 
 
 app.use('/uploads', express.static('uploads'));
@@ -70,3 +74,10 @@ app.listen(Port, () => {
 // farmer & cutomer -----> both become collection center
 // single user have only 1 collection center
 
+
+
+
+// pending from client
+// vehicle update field
+// driver update field
+// collection center ---> order list data 

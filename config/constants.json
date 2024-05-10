@@ -3,8 +3,14 @@
         "USER": "USER",
         "FARMER": "FARMER"
     },
-    "STATUS": {
+    "PRODUCT_STATUS": {
         "AVAILABLE": "AVAILABLE",
         "SOLD": "SOLD"
+    },
+    "ORDER_STATUS": {
+        "NEW": "NEW",
+        "SUCCESS": "SUCCESS",
+        "IN_PROGRESS": "IN_PROGRESS",
+        "FAILED": "FAILED"
     }
 }

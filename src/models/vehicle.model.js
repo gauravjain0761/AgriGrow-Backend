@@ -2,9 +2,12 @@ const mongoose = require("mongoose");
 
 const vehicleModel = new mongoose.Schema(
     {
-        farmerId: {
+        // farmerId: {
+        //     type: mongoose.Schema.Types.ObjectId,
+        //     ref: 'farmer'
+        // },
+        userId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'farmer'
         },
         vehicleName: {
             type: String,

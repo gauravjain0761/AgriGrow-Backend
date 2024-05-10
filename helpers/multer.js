@@ -143,6 +143,31 @@ exports.uploadCollectionCenterImages = multer({
 // --------------------------------------------------------------------------------
 
 
+const driverImagesStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../uploads/driverImages/'));
+    },
+    filename: function (req, file, cb) {
+        // console.log( file );
+        cb(null, moment().unix() + "-" + file.originalname);
+    },
+});
+
+exports.driverImages = multer({
+    storage: driverImagesStorage,
+    limits: {
+        fileSize: 5 * 1024 * 1024,
+    },
+}).fields([
+    { name: 'aadhaarCardFront', maxCount: 1 },
+    { name: 'aadhaarCardBack', maxCount: 1 },
+    { name: 'licenseImage', maxCount: 1 },
+]);
+
+
+// --------------------------------------------------------------------------------
+
+
 const vehicleImagesStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, path.join(__dirname, '../uploads/vehicleImages/'));

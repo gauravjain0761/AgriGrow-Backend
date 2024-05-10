@@ -60,7 +60,7 @@ const userModel = new mongoose.Schema(
         },
         role: {
             type: String,
-            enum: [ constants.ROLE.USER, constants.ROLE.FARMER ],
+            // enum: [ constants.ROLE.USER, constants.ROLE.FARMER ],
             default: constants.ROLE.USER,
         },
         deviceToken: {

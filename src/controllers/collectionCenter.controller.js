@@ -35,8 +35,8 @@ exports.registerToCollectionCenter = async (req, res) => {
                 const newCollectionCenter = new collectionCenterModel({
                     userId: user._id,
                     collectionCenterName: collectionCenterName,
-                    email: email,
-                    mobile: mobile,
+                    email: user.email,
+                    mobile: user.mobile,
                     govermentId: govermentId,
                     licenseNumber: licenseNumber,
                     aadhaarCardNumber: aadhaarCardNumber,
