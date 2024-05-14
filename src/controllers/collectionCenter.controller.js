@@ -26,6 +26,13 @@ exports.registerToCollectionCenter = async (req, res) => {
 
                 const user = req.user;
 
+                if (user.isCollectionCenter === true) {
+                    return res.status(400).send({
+                        status: false,
+                        message: `already have collection center`,
+                    });
+                };
+
                 const { collectionCenterName, email, mobile, password, govermentId, licenseNumber,
                     aadhaarCardNumber, collectionCenterAddress, operationTime, deviceToken } = req.body;
 
@@ -56,6 +63,9 @@ exports.registerToCollectionCenter = async (req, res) => {
 
                 await newCollectionCenter.save();
 
+                user.isCollectionCenter = true;
+                await user.save();
+
                 const token = jwt.sign(
                     { id: newCollectionCenter._id, email: newCollectionCenter.email },
                     "qwerty1234",
@@ -71,14 +81,14 @@ exports.registerToCollectionCenter = async (req, res) => {
             } catch (error) {
                 deleteUploadedFiles(req.files);
                 console.log(error);
-                if (error.code === 11000 && error.keyPattern && (error.keyPattern.email || error.keyPattern.mobile)) {
-                    const violatedKeys = Object.keys(error.keyPattern);
-                    console.log(violatedKeys);
-                    return res.status(400).json({
-                        status: false,
-                        message: `${violatedKeys} is already registered. Please use a different ${violatedKeys}.`,
-                    });
-                }
+                // if (error.code === 11000 && error.keyPattern && (error.keyPattern.email || error.keyPattern.mobile)) {
+                //     const violatedKeys = Object.keys(error.keyPattern);
+                //     console.log(violatedKeys);
+                //     return res.status(400).json({
+                //         status: false,
+                //         message: `${violatedKeys} is already registered. Please use a different ${violatedKeys}.`,
+                //     });
+                // }
                 return res.status(500).send({
                     status: false,
                     message: error.message,

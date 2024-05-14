@@ -1,5 +1,5 @@
-const mongoose = require( "mongoose" );
-const constants = require( "../../config/constants.json" );
+const mongoose = require("mongoose");
+const constants = require("../../config/constants.json");
 
 const userModel = new mongoose.Schema(
     {
@@ -63,6 +63,10 @@ const userModel = new mongoose.Schema(
             // enum: [ constants.ROLE.USER, constants.ROLE.FARMER ],
             default: constants.ROLE.USER,
         },
+        isCollectionCenter: {
+            type: Boolean,
+            default: false,
+        },
         deviceToken: {
             type: String,
             default: null,
@@ -79,4 +83,4 @@ const userModel = new mongoose.Schema(
 
 
 
-module.exports = mongoose.model( "user", userModel );
+module.exports = mongoose.model("user", userModel);

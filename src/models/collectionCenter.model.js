@@ -13,21 +13,17 @@ const collectionCenterModel = new mongoose.Schema(
         },
         email: {
             type: String,
-            unique: true,
-            // required: true,
+            // unique: true,
+            required: true,
         },
-        // password: {
-        //     type: String,
-        //     // required: true,
-        //     default: null,
-        // },
         mobile: {
             type: String,
-            unique: true,
+            // unique: true,
             default: null,
         },
         password: {
             type: String,
+            required: true,
             default: null,
         },
         govermentId: {

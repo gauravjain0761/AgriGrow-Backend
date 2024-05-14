@@ -1,5 +1,5 @@
-const mongoose = require( "mongoose" );
-const constants = require( "../../config/constants.json" );
+const mongoose = require("mongoose");
+const constants = require("../../config/constants.json");
 
 const farmerModel = new mongoose.Schema(
     {
@@ -205,6 +205,12 @@ const farmerModel = new mongoose.Schema(
         //         },
         //     } ]
         // },
+
+
+        isCollectionCenter: {
+            type: Boolean,
+            default: false,
+        },
         deviceToken: {
             type: String,
             default: null,
@@ -221,4 +227,4 @@ const farmerModel = new mongoose.Schema(
 
 
 
-module.exports = mongoose.model( "farmer", farmerModel );
+module.exports = mongoose.model("farmer", farmerModel);
