@@ -28,7 +28,7 @@ router.get( '/get-profile', passportAuthentication, userRoleMiddleware, controll
 
 router.patch( '/update-profile', passportAuthentication, userRoleMiddleware, userMiddleware.updateProfile, controller.updateProfile );
 
-// router.post( '/logOut', passportAuthentication, controller.userLogOut );
+router.post( '/logOut', passportAuthentication, controller.userLogout );
 
 
 

@@ -8,7 +8,7 @@ const passportAuthentication = passport.authenticate('jwt', { session: false });
 
 router.post('/registerToCollectionCenter', passportAuthentication, controller.registerToCollectionCenter);
 
-router.get('/get', passportAuthentication, controller.get);
+router.get('/getCollectionCenterData', passportAuthentication, controller.getCollectionCenterData);
 
 module.exports = router;
 

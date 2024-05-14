@@ -2,7 +2,7 @@ const collectionCenterModel = require('../models/collectionCenter.model');
 const crypto = require('crypto-js');
 const jwt = require('jsonwebtoken');
 
-const { uploadCollectionCenterImages } = require('../../helpers/multer');
+const { uploadCollectionCenterImages, deleteUploadedFiles } = require('../../helpers/multer');
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment');
@@ -104,39 +104,49 @@ exports.registerToCollectionCenter = async (req, res) => {
 };
 
 
-function deleteUploadedFiles(files) {
-    if (!files) return;
-    for (const file of Object.values(files)) {
-        if (Array.isArray(file)) {
-            for (const f of file) {
-                fs.unlink(f.path, (err) => {
-                    if (err) {
-                        console.error('Error deleting file:', err);
-                    } else {
-                        console.log('File deleted successfully:', f.path);
-                    }
-                });
-            }
-        } else {
-            fs.unlink(file.path, (err) => {
-                if (err) {
-                    console.error('Error deleting file:', err);
-                } else {
-                    console.log('File deleted successfully:', file.path);
-                }
-            });
-        }
-    }
-};
+// function deleteUploadedFiles(files) {
+//     if (!files) return;
+//     for (const file of Object.values(files)) {
+//         if (Array.isArray(file)) {
+//             for (const f of file) {
+//                 fs.unlink(f.path, (err) => {
+//                     if (err) {
+//                         console.error('Error deleting file:', err);
+//                     } else {
+//                         console.log('File deleted successfully:', f.path);
+//                     }
+//                 });
+//             }
+//         } else {
+//             fs.unlink(file.path, (err) => {
+//                 if (err) {
+//                     console.error('Error deleting file:', err);
+//                 } else {
+//                     console.log('File deleted successfully:', file.path);
+//                 }
+//             });
+//         }
+//     }
+// };
 
 
 
-exports.get = async (req, res) => {
+// get collection center data
+exports.getCollectionCenterData = async (req, res) => {
     try {
-        return res.json({
+        return res.status(200).json({
+            status: true,
+            message: "profile fetched successfully",
             data: req.user
         })
     } catch (error) {
-        res.json(error)
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
     }
 };
+
+
+
+
