@@ -1,7 +1,9 @@
 {
     "ROLE": {
         "USER": "USER",
-        "FARMER": "FARMER"
+        "FARMER": "FARMER",
+        "COLLECTION_CENTER": "COLLECTION_CENTER",
+        "DRIVER": "DRIVER"
     },
     "PRODUCT_STATUS": {
         "AVAILABLE": "AVAILABLE",

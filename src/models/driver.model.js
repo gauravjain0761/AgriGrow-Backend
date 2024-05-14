@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const constants = require("../../config/constants.json");
 
 const driverModel = new mongoose.Schema(
     {
@@ -28,6 +29,11 @@ const driverModel = new mongoose.Schema(
             trim: true,
             // unique: true,
         },
+        password: {
+            type: String,
+            // required: true,
+            default: null,
+        },
         mobile: {
             type: String,
             required: true,
@@ -49,6 +55,14 @@ const driverModel = new mongoose.Schema(
             default: null,
         },
         licenseImage: {
+            type: String,
+            default: null,
+        },
+        role: {
+            type: String,
+            default: constants.ROLE.DRIVER,
+        },
+        deviceToken: {
             type: String,
             default: null,
         },

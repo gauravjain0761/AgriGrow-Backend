@@ -1,4 +1,6 @@
 const userModel = require( '../models/user.model' );
+const driverModel = require( '../models/driver.model' );
+const collectionCenterModel = require( '../models/collectionCenter.model' );
 const crypto = require( 'crypto-js' );
 const jwt = require( 'jsonwebtoken' );
 const { generateRandomNumber } = require( "../../helpers/randomNumber.helper" );
@@ -58,7 +60,7 @@ const userLogin = async ( req, res ) =>
 {
     try
     {
-        const { email, mobile, password, deviceToken } = req.body;
+        const { email, mobile, password, deviceToken,role } = req.body;
 
         let query = {};
         if ( email )
@@ -75,7 +77,7 @@ const userLogin = async ( req, res ) =>
             } );
         };
 
-        const user = await userModel.findOne( { $or: [ query ] } );
+        // const user = await userModel.findOne( { $or: [ query ] } );
         // console.log( user );
         // const user = await userModel.findOne( {
         //     $or: [
@@ -84,13 +86,22 @@ const userLogin = async ( req, res ) =>
         //     ]
         // } );
 
+
+        const userModels = [userModel, driverModel, collectionCenterModel];
+        let user;
+        for (const model of userModels) {
+            user = await model.findOne({ $or: [query], role:role });
+            console.log(user);
+            if (user) break; // If user is found, break the loop
+        };
+
         if ( !user )
         {
             return res.status( 404 ).send( {
                 status: false,
                 message: "not found!",
             } );
-        }
+        };
 
         const decryptedPass = crypto.AES.decrypt(
             user.password,
@@ -129,6 +140,90 @@ const userLogin = async ( req, res ) =>
         } );
     }
 };
+
+
+// // login
+// const userLogin = async (req, res) => {
+//     try {
+//         const { email, mobile, password, deviceToken } = req.body;
+
+//         let query = {};
+//         if (email) {
+//             query = { email: email.toLowerCase() };
+//         } else if (mobile) {
+//             query = { mobile: mobile };
+//         } else {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: "Email or mobile number is required."
+//             });
+//         }
+
+//         // Attempt to find the user in the different models
+//         const userModels = [userModel, driverModel, collectionCenterModel];
+//         let user;
+//         for (const model of userModels) {
+//             user = await model.findOne({ $or: [query] });
+//             if (user) break; // If user is found, break the loop
+//         }
+
+//         if (!user) {
+//             return res.status(404).send({
+//                 status: false,
+//                 message: "User not found!"
+//             });
+//         }
+
+//         const decryptedPass = crypto.AES.decrypt(
+//             user.password,
+//             process.env.secretKey
+//         ).toString(crypto.enc.Utf8);
+
+//         if (password !== decryptedPass) {
+//             return res.status(400).send({
+//                 status: false,
+//                 message: "Incorrect email or password!"
+//             });
+//         }
+
+//         // Infer role based on the model used for authentication
+//         let role;
+//         if (user instanceof driverModel) {
+//             role = 'driver';
+//         } else if (user instanceof collectionCenterModel) {
+//             role = 'collection_center';
+//         } else {
+//             role = 'user'; // Default to user role
+//         }
+
+//         const token = jwt.sign(
+//             { id: user._id, email: user.email },
+//             "qwerty1234",
+//             { expiresIn: '24h' }
+//         );
+
+//         user.deviceToken = deviceToken;
+//         await user.save();
+
+//         return res.status(200).send({
+//             status: true,
+//             message: "Login successful",
+//             token: token,
+//             userData: user
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         return res.status(500).send({
+//             status: false,
+//             message: error.message
+//         });
+//     }
+// };
+
+
+
+
+
 
 // send reset password otp to email
 const sendResetPasswordOtp = async ( req, res ) =>

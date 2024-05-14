@@ -10,7 +10,7 @@ const { userRoleMiddleware } = require( '../../config/userRoleMiddleware' );
 
 router.post( '/sign-up', userMiddleware.userSignUp, controller.userSignUp );
 
-router.post( '/login', userMiddleware.userLogin, controller.userLogin );
+router.post( '/login',/*  userMiddleware.userLogin, */ controller.userLogin );
 
 router.post( '/send-reset-password-otp', userMiddleware.sendResetPasswordOtp, controller.sendResetPasswordOtp );
 

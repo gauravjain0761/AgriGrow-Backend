@@ -19,4 +19,6 @@ router.post('/searchVehicle', passportAuthentication, farmerRoleMiddleware, cont
 router.delete('/removeVehicle/:vehicleId', passportAuthentication, farmerRoleMiddleware, controller.removeVehicle);
 
 
+
+
 module.exports = router;

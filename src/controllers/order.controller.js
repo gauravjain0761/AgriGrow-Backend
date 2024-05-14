@@ -190,12 +190,26 @@ exports.filterOrder = async (req, res) => {
         };
 
         const statusData = orders.filter(element => element.status === status.toUpperCase());
+        const timeData = orders.filter(element => {
+            // element.time == months
+            const getMonth = moment.unix(element.time).format("YYYY-MM");
+            if (getMonth == months) {
+                return res.status(200).json({
+                    status: true,
+                    message: 'fetched successfully',
+                    data: orders,
+                    // statusData: statusData,
+                    timeData: timeData
+                });
+            }
+        });
 
         return res.status(200).json({
             status: true,
             message: 'fetched successfully',
             data: orders,
             statusData: statusData,
+            timeData: timeData
         });
     } catch (error) {
         console.log(error);
@@ -205,6 +219,18 @@ exports.filterOrder = async (req, res) => {
         })
     }
 };
+
+
+
+// const a2 = moment().unix();
+// const a = '1715580616';
+// const readableDate = moment.unix(a).format("YYYY-MM-DD HH:mm:ss");
+// const readableDate2 = moment.unix(a).format("YYYY-MM");
+// console.log(a2);
+// console.log(a);
+// console.log(readableDate);
+// console.log(readableDate2);
+
 
 
 

@@ -28,6 +28,14 @@ const orderModel = new mongoose.Schema(
             type: String,
             default: null,
         },
+        receiverImage: {
+            type: String,
+            default: null,
+        },
+        receiverName: {
+            type: String,
+            default: null,
+        },
         isAvailable: {
             type: Boolean,
             default: true,

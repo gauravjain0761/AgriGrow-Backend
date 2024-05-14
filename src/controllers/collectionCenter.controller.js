@@ -1,4 +1,5 @@
 const collectionCenterModel = require('../models/collectionCenter.model');
+const crypto = require('crypto-js');
 
 const { uploadCollectionCenterImages } = require('../../helpers/multer');
 const fs = require('fs');
@@ -24,7 +25,7 @@ exports.registerToCollectionCenter = async (req, res) => {
 
                 const user = req.user;
 
-                const { collectionCenterName, email, mobile, govermentId, licenseNumber,
+                const { collectionCenterName, email, mobile, password, govermentId, licenseNumber,
                     aadhaarCardNumber, collectionCenterAddress, operationTime, } = req.body;
 
                 const aadhaarCardFront = req.files.aadhaarCardFront ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.aadhaarCardFront[0].originalname}` : null;
@@ -35,8 +36,12 @@ exports.registerToCollectionCenter = async (req, res) => {
                 const newCollectionCenter = new collectionCenterModel({
                     userId: user._id,
                     collectionCenterName: collectionCenterName,
-                    email: user.email,
-                    mobile: user.mobile,
+                    email: email,
+                    mobile: mobile,
+                    password: crypto.AES.encrypt(
+                        password,
+                        process.env.secretKey
+                    ).toString(),
                     govermentId: govermentId,
                     licenseNumber: licenseNumber,
                     aadhaarCardNumber: aadhaarCardNumber,

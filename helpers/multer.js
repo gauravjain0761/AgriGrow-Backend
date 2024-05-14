@@ -188,6 +188,26 @@ exports.vehicleImages = multer({
     { name: 'vehicleImage', maxCount: 1 },
 ]);
 
+// ------------------------------------------------------------------------------------
+
+
+const receiverImageStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../uploads/receiverImages/'));
+    },
+    filename: function (req, file, cb) {
+        // console.log( file );
+        cb(null, moment().unix() + "-" + file.originalname);
+    },
+});
+
+exports.receiverImage = multer({
+    storage: receiverImageStorage,
+    limits: {
+        fileSize: 5 * 1024 * 1024,
+    },
+}).single("receiverImage");
+
 
 // -------------------------------------------------------------------------------------
 

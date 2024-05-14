@@ -1,6 +1,9 @@
 const driverModel = require('../models/driver.model');
+const orderModel = require('../models/order.model');
+const crypto = require('crypto-js');
+const constants = require("../../config/constants.json");
 
-const { driverImages, deleteUploadedFiles } = require('../../helpers/multer');
+const { driverImages, receiverImage, deleteUploadedFiles } = require('../../helpers/multer');
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment');
@@ -22,7 +25,7 @@ exports.addDriver = async (req, res) => {
                 };
 
                 const user = req.user;
-                const { name, email, mobile, licenseNumber, aadhaarCardNumber } = req.body;
+                const { name, email, mobile, password, licenseNumber, aadhaarCardNumber } = req.body;
 
                 const aadhaarCardFront = req.files.aadhaarCardFront ? `/uploads/driverImages/${moment().unix()}-${req.files.aadhaarCardFront[0].originalname}` : null;
                 const aadhaarCardBack = req.files.aadhaarCardBack ? `/uploads/driverImages/${moment().unix()}-${req.files.aadhaarCardBack[0].originalname}` : null;
@@ -33,6 +36,10 @@ exports.addDriver = async (req, res) => {
                     name: name,
                     email: email,
                     mobile: mobile,
+                    password: crypto.AES.encrypt(
+                        password,
+                        process.env.secretKey
+                    ).toString(),
                     licenseNumber: licenseNumber,
                     aadhaarCardNumber: aadhaarCardNumber,
                     aadhaarCardFront: aadhaarCardFront,
@@ -214,3 +221,180 @@ exports.removeDriver = async (req, res) => {
         })
     }
 };
+
+
+// driver all order list
+exports.driverAllOrderList = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const order = await orderModel.find(
+            { driverId: req.user._id, isAvailable: true }
+        )
+            .populate({
+                path: 'productId',
+                select: '_id productName description images originalPrice offerPrice',
+            })
+            // .exec();
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .exec();
+
+        if (!order) {
+            return res.status(404).json({
+                status: false,
+                message: "not found!",
+            })
+        };
+        const totalDocuments = await orderModel.countDocuments({ userId: req.user._id, isAvailable: true });
+
+        return res.status(200).json({
+            status: true,
+            message: 'successfully fetched',
+            totalDocuments: totalDocuments,
+            data: order
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
+    }
+};
+
+
+
+// // deliver order
+// exports.deliverOrder = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const user = req.user;
+
+// const order = await orderModel.findOne({ _id: id, driverId: user._id, isAvailable: true });
+
+//         if (!order) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: "not found!",
+//             })
+//         };
+//         // first driver scan the qr code of customer mobile
+//         // here if product qr code matched with customer qr code then successfull
+
+//         order.status = constants.ORDER_STATUS.SUCCESS;
+// order.receiverName = 'Self';
+//         order.isAvailable = false;
+// order.time = moment().unix();
+//         // also update the product model
+//         order.save();
+
+//         return res.status(200).json({
+//             status: true,
+//             message: 'order deleivered successfully',
+//             data: order
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message,
+//         });
+//     }
+// };
+
+
+
+
+// customer not available
+exports.customerNotAvailable = async (req, res) => {
+    try {
+        receiverImage(req, res, async (err) => {
+            try {
+                // console.log( 2222, req.files );
+                if (err) {
+                    console.log('Error during file upload:', err);
+                    deleteUploadedFiles(req.files);
+                    return res.status(500).send({
+                        status: false,
+                        message: 'Error during file upload: ' + err.message,
+                    });
+                };
+
+                const { id } = req.params;
+                const user = req.user;
+                const receiverImage = req.files.receiverImage ? `/uploads/receiverImages/${moment().unix()}-${req.files.receiverImage.originalname}` : null;
+                const { receiverName } = req.body;
+
+                const order = await orderModel.findOne({ _id: id, driverId: user._id, isAvailable: true });
+
+                if (!order) {
+                    return res.status(404).json({
+                        status: false,
+                        message: "not found!",
+                    })
+                };
+
+                order.receiverImage = receiverImage;
+                order.receiverName = receiverName;
+                order.status = ORDER_STATUS.SUCCESS;
+                order.isAvailable = false;
+                order.time = moment().unix();
+                // also update the product model
+                order.save();
+
+                return res.status(200).json({
+                    status: true,
+                    message: 'order deleivered successfully',
+                    data: order
+                });
+            } catch (error) {
+                deleteUploadedFiles(req.files);
+                console.log(error);
+                return res.status(500).send({
+                    status: false,
+                    message: error.message,
+                });
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
+    }
+};
+
+
+// order delivered details
+exports.orderDeliveredDetails = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const order = await orderModel.find({
+            _id: id,
+            driverId: req.user._id,
+            status: constants.ORDER_STATUS.SUCCESS,
+            isAvailable: false
+        });
+
+        if (!order) {
+            return res.status(404).json({
+                status: false,
+                message: "not found!",
+            })
+        };
+
+        return res.status(200).json({
+            status: true,
+            message: 'successfully fetched',
+            data: order
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
+    }
+};
+
+

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const constants = require("../../config/constants.json");
 
 const collectionCenterModel = new mongoose.Schema(
     {
@@ -23,6 +24,10 @@ const collectionCenterModel = new mongoose.Schema(
         mobile: {
             type: String,
             unique: true,
+            default: null,
+        },
+        password: {
+            type: String,
             default: null,
         },
         govermentId: {
@@ -54,6 +59,14 @@ const collectionCenterModel = new mongoose.Schema(
             default: null,
         },
         licenseImage: {
+            type: String,
+            default: null,
+        },
+        role: {
+            type: String,
+            default: constants.ROLE.COLLECTION_CENTER,
+        },
+        deviceToken: {
             type: String,
             default: null,
         },
