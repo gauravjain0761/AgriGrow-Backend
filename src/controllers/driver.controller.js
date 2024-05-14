@@ -183,6 +183,130 @@ exports.searchDriver = async (req, res) => {
 };
 
 
+// remove driver status
+exports.updateDriverStatus = async (req, res) => {
+    try {
+        const { driverId } = req.params;
+        const { status } = req.body;
+
+        const driver = await driverModel.findOne({ _id: driverId, /* userId: req.user._id */ });
+        if (!driver) {
+            return res.status(404).json({
+                status: false,
+                message: "not found!",
+            })
+        };
+
+        if (status !== true && status !== false) {
+            return res.status(400).json({
+                status: false,
+                message: `accept only boolean value ${true} or ${false}`,
+            })
+        };
+
+        driver.isAvailable = status;
+        await driver.save();
+        return res.status(200).send({
+            status: true,
+            message: "driver status updated",
+            data: driver
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            status: false,
+            message: error.message
+        })
+    }
+};
+
+
+// update driver data
+exports.updateDriverData = async (req, res) => {
+    try {
+        driverImages(req, res, async (err) => {
+            try {
+                if (err) {
+                    deleteUploadedFiles(req.files);
+                    return res.status(500).send({
+                        status: false,
+                        message: 'Error during file upload: ' + err.message,
+                    });
+                };
+
+                const { driverId } = req.params;
+                const { name, email, mobile, password, licenseNumber, aadhaarCardNumber } = req.body;
+                const aadhaarCardFront = req.files.aadhaarCardFront ? `/uploads/driverImages/${moment().unix()}-${req.files.aadhaarCardFront[0].originalname}` : null;
+                const aadhaarCardBack = req.files.aadhaarCardBack ? `/uploads/driverImages/${moment().unix()}-${req.files.aadhaarCardBack[0].originalname}` : null;
+                const licenseImage = req.files.licenseImage ? `/uploads/driverImages/${moment().unix()}-${req.files.licenseImage[0].originalname}` : null;
+
+                const driver = await driverModel.findOne({ _id: driverId, /* userId: req.user._id */ });
+                if (!driver) {
+                    deleteUploadedFiles(req.files);
+                    return res.status(404).json({
+                        status: false,
+                        message: "not found!",
+                    })
+                };
+
+                if (driver.aadhaarCardFront) {
+                    const oldImagePath = path.join(__dirname, '../../', driver.aadhaarCardFront);
+                    if (fs.existsSync(oldImagePath)) {
+                        console.log(111111, oldImagePath);
+                        fs.unlinkSync(oldImagePath);
+                    }
+                };
+                if (driver.aadhaarCardBack) {
+                    const oldImagePath = path.join(__dirname, '../../', driver.aadhaarCardBack);
+                    if (fs.existsSync(oldImagePath)) {
+                        console.log(222222222, oldImagePath);
+                        fs.unlinkSync(oldImagePath);
+                    }
+                };
+                if (driver.licenseImage) {
+                    const oldImagePath = path.join(__dirname, '../../', driver.licenseImage);
+                    if (fs.existsSync(oldImagePath)) {
+                        console.log(333333, oldImagePath);
+                        fs.unlinkSync(oldImagePath);
+                    }
+                };
+
+                driver.name = name ? name : driver.name;
+                driver.email = email ? email : driver.email;
+                driver.mobile = mobile ? mobile : driver.mobile;
+                driver.password = password ? mobile : driver.password;
+                driver.licenseNumber = licenseNumber ? mobile : driver.licenseNumber;
+                driver.aadhaarCardNumber = aadhaarCardNumber ? mobile : driver.aadhaarCardNumber;
+                driver.aadhaarCardFront = aadhaarCardFront ? aadhaarCardFront : driver.aadhaarCardFront;
+                driver.aadhaarCardBack = aadhaarCardBack ? aadhaarCardBack : driver.aadhaarCardBack;
+                driver.licenseImage = licenseImage ? licenseImage : driver.licenseImage;
+
+                await driver.save();
+                return res.status(200).send({
+                    status: true,
+                    message: "driver data updated",
+                    data: driver
+                });
+            } catch (error) {
+                deleteUploadedFiles(req.files);
+                console.log(error);
+                return res.status(500).send({
+                    status: false,
+                    message: error.message,
+                });
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            status: false,
+            message: error.message
+        })
+    }
+};
+
+
+
 // remove driver by Id
 exports.removeDriver = async (req, res) => {
     try {
@@ -221,6 +345,21 @@ exports.removeDriver = async (req, res) => {
         })
     }
 };
+
+
+
+
+
+
+
+// --------------------------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
 
 
 // driver all order list

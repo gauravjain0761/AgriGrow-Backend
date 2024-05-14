@@ -1,5 +1,6 @@
 const collectionCenterModel = require('../models/collectionCenter.model');
 const crypto = require('crypto-js');
+const jwt = require('jsonwebtoken');
 
 const { uploadCollectionCenterImages } = require('../../helpers/multer');
 const fs = require('fs');
@@ -26,7 +27,7 @@ exports.registerToCollectionCenter = async (req, res) => {
                 const user = req.user;
 
                 const { collectionCenterName, email, mobile, password, govermentId, licenseNumber,
-                    aadhaarCardNumber, collectionCenterAddress, operationTime, } = req.body;
+                    aadhaarCardNumber, collectionCenterAddress, operationTime, deviceToken } = req.body;
 
                 const aadhaarCardFront = req.files.aadhaarCardFront ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.aadhaarCardFront[0].originalname}` : null;
                 const aadhaarCardBack = req.files.aadhaarCardBack ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.aadhaarCardBack[0].originalname}` : null;
@@ -36,8 +37,8 @@ exports.registerToCollectionCenter = async (req, res) => {
                 const newCollectionCenter = new collectionCenterModel({
                     userId: user._id,
                     collectionCenterName: collectionCenterName,
-                    email: email,
-                    mobile: mobile,
+                    email: user.email,
+                    mobile: user.mobile,
                     password: crypto.AES.encrypt(
                         password,
                         process.env.secretKey
@@ -49,13 +50,22 @@ exports.registerToCollectionCenter = async (req, res) => {
                     operationTime: operationTime,
                     aadhaarCardFront: aadhaarCardFront,
                     aadhaarCardBack: aadhaarCardBack,
-                    licenseImage: licenseImage
+                    licenseImage: licenseImage,
+                    deviceToken: deviceToken
                 });
 
                 await newCollectionCenter.save();
+
+                const token = jwt.sign(
+                    { id: newCollectionCenter._id, email: newCollectionCenter.email },
+                    "qwerty1234",
+                    { expiresIn: '24h' }
+                );
+
                 return res.status(201).json({
                     status: true,
                     message: 'register to new collection center successfully',
+                    token: token,
                     data: newCollectionCenter
                 });
             } catch (error) {
@@ -106,5 +116,17 @@ function deleteUploadedFiles(files) {
                 }
             });
         }
+    }
+};
+
+
+
+exports.get = async (req, res) => {
+    try {
+        return res.json({
+            data: req.user
+        })
+    } catch (error) {
+        res.json(error)
     }
 };

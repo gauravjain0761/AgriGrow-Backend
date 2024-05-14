@@ -4,19 +4,21 @@ const passport = require('passport');
 require('./../../config/passport')(passport);
 const controller = require('../controllers/vehicle.controller');
 const passportAuthentication = passport.authenticate('jwt', { session: false });
-const { farmerRoleMiddleware } = require('../../config/userRoleMiddleware');
+const { ccRoleMiddleware } = require('../../config/userRoleMiddleware');
 
 
 
-router.post('/addVehicle', passportAuthentication, farmerRoleMiddleware, controller.addVehicle);
+router.post('/addVehicle', passportAuthentication, ccRoleMiddleware, controller.addVehicle);
 
-router.get('/allVehicleList', passportAuthentication, farmerRoleMiddleware, controller.allVehicleList);
+router.get('/allVehicleList', passportAuthentication, ccRoleMiddleware, controller.allVehicleList);
 
-router.get('/getVehicleDetailsById/:vehicleId', passportAuthentication, farmerRoleMiddleware, controller.getVehicleDetailsById);
+router.get('/getVehicleDetailsById/:vehicleId', passportAuthentication, ccRoleMiddleware, controller.getVehicleDetailsById);
 
-router.post('/searchVehicle', passportAuthentication, farmerRoleMiddleware, controller.searchVehicle);
+router.patch('/updateVehicleDetails/:vehicleId', passportAuthentication, ccRoleMiddleware, controller.updateVehicleDetails);
 
-router.delete('/removeVehicle/:vehicleId', passportAuthentication, farmerRoleMiddleware, controller.removeVehicle);
+router.post('/searchVehicle', passportAuthentication, ccRoleMiddleware, controller.searchVehicle);
+
+router.delete('/removeVehicle/:vehicleId', passportAuthentication, ccRoleMiddleware, controller.removeVehicle);
 
 
 

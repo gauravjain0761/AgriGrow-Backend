@@ -80,8 +80,8 @@ app.listen(Port, () => {
 // pending from client
 // vehicle update field   ---> all data
 // driver update field  ----> adhar number & ID ,license image & ID
-// collection center ---> order list data 
-
+// collection center ---> order list data
+// driver status active/ inactive by cc
 
 
 

@@ -22,7 +22,7 @@ exports.ccRoleMiddleware = (req, res, next) => {
     if (req.user.role !== 'COLLECTION_CENTER') {
         return res.status(403).json({
             status: false,
-            message: 'Only cc are allowed to perform this action!'
+            message: 'Only collection center are allowed to perform this action!'
         })
     };
     next();

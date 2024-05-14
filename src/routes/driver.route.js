@@ -10,19 +10,25 @@ const { ccRoleMiddleware, driverRoleMiddleware } = require('../../config/userRol
 
 router.post('/addDriver', passportAuthentication, ccRoleMiddleware, controller.addDriver);
 
-router.get('/allDriverList', passportAuthentication, controller.allDriverList);
+router.get('/allDriverList', passportAuthentication, ccRoleMiddleware, controller.allDriverList);
 
 router.get('/getDriverDetailsById/:driverId', passportAuthentication, controller.getDriverDetailsById);
 
-router.post('/searchDriver', passportAuthentication, controller.searchDriver);
+router.post('/searchDriver', passportAuthentication, ccRoleMiddleware, controller.searchDriver);
+
+router.patch('/updateDriverData/:driverId', passportAuthentication, ccRoleMiddleware, controller.updateDriverData);
+
+router.patch('/updateDriverStatus/:driverId', passportAuthentication, ccRoleMiddleware, controller.updateDriverStatus);
 
 router.delete('/removeDriver/:driverId', passportAuthentication, ccRoleMiddleware, controller.removeDriver);
 
+
+// ---------------------------------------------------------------------------------------
 router.get('/driverAllOrderList', passportAuthentication, driverRoleMiddleware, controller.driverAllOrderList);
 
 // router.post('/deliverOrder/:id', passportAuthentication, driverRoleMiddleware, controller.deliverOrder);
 
-router.post('/customerNotAvailable/:id', passportAuthentication, driverRoleMiddleware, controller.customerNotAvailable);
+router.patch('/customerNotAvailable/:id', passportAuthentication, driverRoleMiddleware, controller.customerNotAvailable);
 
 router.get('/orderDeliveredDetails/:id', passportAuthentication, driverRoleMiddleware, controller.orderDeliveredDetails);
 

@@ -123,6 +123,80 @@ exports.getVehicleDetailsById = async (req, res) => {
 };
 
 
+// update vehicle details
+exports.updateVehicleDetails = async (req, res) => {
+    try {
+        vehicleImages(req, res, async (err) => {
+            try {
+                if (err) {
+                    deleteUploadedFiles(req.files);
+                    return res.status(500).send({
+                        status: false,
+                        message: 'Error during file upload: ' + err.message,
+                    });
+                };
+
+                const { vehicleId } = req.params;
+                const { vehicleName, vehicleType, make, model, year, VIN_Number } = req.body;
+                const RC_BookImage = req.files.RC_BookImage ? `/uploads/vehicleImages/${moment().unix()}-${req.files.RC_BookImage[0].originalname}` : null;
+                const vehicleImage = req.files.vehicleImage ? `/uploads/vehicleImages/${moment().unix()}-${req.files.vehicleImage[0].originalname}` : null;
+
+                const vehicle = await vehicleModel.findOne({ _id: vehicleId, /* userId: req.user._id */ });
+                if (!vehicle) {
+                    deleteUploadedFiles(req.files);
+                    return res.status(404).json({
+                        status: false,
+                        message: "not found!",
+                    })
+                };
+
+                if (vehicle.RC_BookImage) {
+                    const oldImagePath = path.join(__dirname, '../../', vehicle.RC_BookImage);
+                    if (fs.existsSync(oldImagePath)) {
+                        fs.unlinkSync(oldImagePath);
+                    }
+                };
+
+                if (vehicle.vehicleImage) {
+                    const oldImagePath = path.join(__dirname, '../../', vehicle.vehicleImage);
+                    if (fs.existsSync(oldImagePath)) {
+                        fs.unlinkSync(oldImagePath);
+                    }
+                };
+
+                vehicle.vehicleName = vehicleName ? vehicleName : vehicle.vehicleName;
+                vehicle.vehicleType = vehicleType ? vehicleType : vehicle.vehicleType;
+                vehicle.make = make ? make : vehicle.make;
+                vehicle.model = model ? model : vehicle.model;
+                vehicle.year = year ? year : vehicle.year;
+                vehicle.VIN_Number = VIN_Number ? VIN_Number : vehicle.VIN_Number;
+                vehicle.RC_BookImage = RC_BookImage ? RC_BookImage : vehicle.RC_BookImage;
+                vehicle.vehicleImage = vehicleImage ? vehicleImage : vehicle.vehicleImage;
+
+                await vehicle.save();
+                return res.status(200).json({
+                    status: true,
+                    message: 'updated successfully',
+                    data: vehicle
+                });
+            } catch (error) {
+                deleteUploadedFiles(req.files);
+                console.log(error);
+                return res.status(500).send({
+                    status: false,
+                    message: error.message,
+                });
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
+    }
+};
+
+
 // search vehicle
 exports.searchVehicle = async (req, res) => {
     try {
