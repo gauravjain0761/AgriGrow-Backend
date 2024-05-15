@@ -1,5 +1,5 @@
-const mongoose = require( "mongoose" );
-const constants = require( "../../config/constants.json" );
+const mongoose = require("mongoose");
+const constants = require("../../config/constants.json");
 
 const productModel = new mongoose.Schema(
     {
@@ -23,11 +23,11 @@ const productModel = new mongoose.Schema(
             type: String,
             required: true,
         },
-        images: [ {
+        images: [{
             type: String,
             required: true,
             default: null,
-        } ],
+        }],
         originalPrice: {
             type: Number,
             required: true,
@@ -46,6 +46,14 @@ const productModel = new mongoose.Schema(
             type: Number,
             default: 1,
         },
+
+
+        // weight: {
+        //     type: String,
+        //     default: 'gram',
+        // },
+
+        
         // addOns: {
         //     type: [ {
         //         image: {
@@ -66,7 +74,7 @@ const productModel = new mongoose.Schema(
         // },
         status: {
             type: String,
-            enum: [ constants.PRODUCT_STATUS.AVAILABLE, constants.PRODUCT_STATUS.SOLD ],
+            enum: [constants.PRODUCT_STATUS.AVAILABLE, constants.PRODUCT_STATUS.SOLD],
             default: constants.PRODUCT_STATUS.AVAILABLE,
         },
         // bestDealOfferProduct: {
@@ -89,7 +97,7 @@ const productModel = new mongoose.Schema(
 
 
 
-module.exports = mongoose.model( "product", productModel );
+module.exports = mongoose.model("product", productModel);
 
 
 

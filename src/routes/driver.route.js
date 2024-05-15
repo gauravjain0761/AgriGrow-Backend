@@ -22,16 +22,21 @@ router.patch('/updateDriverStatus/:driverId', passportAuthentication, ccRoleMidd
 
 router.delete('/removeDriver/:driverId', passportAuthentication, ccRoleMiddleware, controller.removeDriver);
 
+router.get('/trackDriverLocation/:driverId', passportAuthentication, ccRoleMiddleware, controller.trackDriverLocation);
+
 
 // ---------------------------------------------------------------------------------------
+
+
 router.get('/driverAllOrderList', passportAuthentication, driverRoleMiddleware, controller.driverAllOrderList);
 
 // router.post('/deliverOrder/:id', passportAuthentication, driverRoleMiddleware, controller.deliverOrder);
 
 router.patch('/customerNotAvailable/:id', passportAuthentication, driverRoleMiddleware, controller.customerNotAvailable);
 
-router.get('/orderDeliveredDetails/:id', passportAuthentication, driverRoleMiddleware, controller.orderDeliveredDetails);
+router.get('/deliveredOrderDetails/:id', passportAuthentication, driverRoleMiddleware, controller.deliveredOrderDetails);
 
+router.patch('/addDriverLocation', passportAuthentication, driverRoleMiddleware, controller.addDriverLocation);
 
 
 

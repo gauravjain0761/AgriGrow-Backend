@@ -149,4 +149,90 @@ exports.getCollectionCenterData = async (req, res) => {
 
 
 
+// Helper function to delete an old image
+const deleteOldImage = (imagePath) => {
+    if (imagePath) {
+        const fullPath = path.join(__dirname, '../../', imagePath);
+        if (fs.existsSync(fullPath)) {
+            fs.unlinkSync(fullPath);
+        }
+    }
+};
+
+
+// update collectionCenter data
+exports.updateCollectionCenterData = async (req, res) => {
+    try {
+        uploadCollectionCenterImages(req, res, async (err) => {
+            try {
+                if (err) {
+                    // console.log('Error during file upload:', err);
+                    deleteUploadedFiles(req.files);
+                    return res.status(500).send({
+                        status: false,
+                        message: 'Error during file upload: ' + err.message,
+                    });
+                };
+
+                const user = req.user;
+
+                const { collectionCenterName, email, mobile, govermentId, licenseNumber,
+                    aadhaarCardNumber, collectionCenterAddress, operationTime } = req.body;
+
+                const govermentIdImage = req.files.govermentIdImage ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.govermentIdImage[0].originalname}` : null;
+                const aadhaarCardFront = req.files.aadhaarCardFront ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.aadhaarCardFront[0].originalname}` : null;
+                const aadhaarCardBack = req.files.aadhaarCardBack ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.aadhaarCardBack[0].originalname}` : null;
+                const licenseImage = req.files.licenseImage ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.licenseImage[0].originalname}` : null;
+
+                // Delete old images if new ones are uploaded
+                if (govermentIdImage) {
+                    deleteOldImage(user.govermentIdImage);
+                };
+                if (aadhaarCardFront) {
+                    deleteOldImage(user.aadhaarCardFront);
+                };
+                if (aadhaarCardBack) {
+                    deleteOldImage(user.aadhaarCardBack);
+                };
+                if (licenseImage) {
+                    deleteOldImage(user.licenseImage);
+                };
+
+                user.collectionCenterName = collectionCenterName ? collectionCenterName : user.collectionCenterName;
+                user.email = email ? email : user.email;
+                user.mobile = mobile ? mobile : user.mobile;
+                user.govermentId = govermentId ? govermentId : user.govermentId;
+                user.licenseNumber = licenseNumber ? licenseNumber : user.licenseNumber;
+                user.aadhaarCardNumber = aadhaarCardNumber ? aadhaarCardNumber : user.aadhaarCardNumber;
+                user.collectionCenterAddress = collectionCenterAddress ? collectionCenterAddress : user.collectionCenterAddress;
+                user.operationTime = operationTime ? operationTime : user.operationTime;
+                user.govermentIdImage = govermentIdImage ? govermentIdImage : user.govermentIdImage;
+                user.aadhaarCardFront = aadhaarCardFront ? aadhaarCardFront : user.aadhaarCardFront;
+                user.aadhaarCardBack = aadhaarCardBack ? aadhaarCardBack : user.aadhaarCardBack;
+                user.licenseImage = licenseImage ? licenseImage : user.licenseImage;
+
+                await user.save();
+
+                return res.status(200).json({
+                    status: true,
+                    message: 'data updated successfully',
+                    data: user
+                });
+            } catch (error) {
+                deleteUploadedFiles(req.files);
+                console.log(error);
+                return res.status(500).send({
+                    status: false,
+                    message: error.message,
+                });
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message
+        })
+    }
+};
+
 

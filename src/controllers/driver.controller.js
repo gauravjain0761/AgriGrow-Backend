@@ -348,6 +348,40 @@ exports.removeDriver = async (req, res) => {
 
 
 
+// track driver location
+exports.trackDriverLocation = async (req, res) => {
+    try {
+        const { driverId } = req.params;
+
+        const driver = await driverModel.findOne({ _id: driverId, userId: user._id, });
+        if (!driver) {
+            return res.status(404).json({
+                status: false,
+                message: "driver not found!",
+            })
+        };
+        if (driver.isAvailable === false) {
+            return res.status(404).json({
+                status: false,
+                message: `${driver.name}, status is inactive from Collection Center.`,
+            })
+        };
+
+        return res.status(200).send({
+            status: true,
+            message: "driver location fetched successfully",
+            lat: driver.lat,
+            long: driver.long,
+            driverData: driver
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            status: false,
+            message: error.message
+        })
+    }
+};
 
 
 
@@ -505,8 +539,8 @@ exports.customerNotAvailable = async (req, res) => {
 };
 
 
-// order delivered details
-exports.orderDeliveredDetails = async (req, res) => {
+// delivered order details
+exports.deliveredOrderDetails = async (req, res) => {
     try {
         const { id } = req.params;
         const order = await orderModel.find({
@@ -527,6 +561,32 @@ exports.orderDeliveredDetails = async (req, res) => {
             status: true,
             message: 'successfully fetched',
             data: order
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
+    }
+};
+
+
+
+// add driver location
+exports.addDriverLocation = async (req, res) => {
+    try {
+        const user = await req.user;
+        const { lat, long } = req.body;
+
+        user.lat = lat ? lat : user.lat;
+        user.long = long ? long : user.long;
+
+        await user.save();
+
+        return res.status(200).json({
+            status: true,
+            message: 'successfully added',
+            userData: user
         });
     } catch (error) {
         return res.status(500).json({

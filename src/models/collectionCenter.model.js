@@ -46,6 +46,14 @@ const collectionCenterModel = new mongoose.Schema(
             type: String,
             default: null,
         },
+        profileImage: {
+            type: String,
+            default: null,
+        },
+        govermentIdImage: {
+            type: String,
+            default: null,
+        },
         aadhaarCardFront: {
             type: String,
             default: null,

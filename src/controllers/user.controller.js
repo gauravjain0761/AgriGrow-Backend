@@ -590,3 +590,11 @@ module.exports = {
     userLogout
 };
 
+
+
+
+
+
+// const id = '662a45c464557b992225c70c';
+// const last7Digits = id.slice(-7); // This gets the last 7 characters of the string
+// console.log(last7Digits); // Output: '225c70c'

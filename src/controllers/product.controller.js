@@ -32,8 +32,7 @@ const addProduct = async (req, res) => {
 
                 const imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
 
-                const { productName, description, originalPrice, offerPrice, discount, quantity,
-                    name, price } = req.body;
+                const { productName, description, originalPrice, offerPrice, discount, quantity, name, price } = req.body;
 
                 const product = new productModel({
                     farmerId: req.user._id,

@@ -62,6 +62,14 @@ const driverModel = new mongoose.Schema(
             type: String,
             default: constants.ROLE.DRIVER,
         },
+        lat: {
+            type: String,
+            default: null,
+        },
+        long: {
+            type: String,
+            default: null,
+        },
         deviceToken: {
             type: String,
             default: null,
