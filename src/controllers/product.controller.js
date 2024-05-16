@@ -2,7 +2,7 @@ const categoryModel = require('../models/category.model');
 const productModel = require('../models/product.model');
 const cartModel = require('../models/cart.model');
 
-const { uploadProductImages } = require('../../helpers/multer');
+const { uploadProductImages, deleteUploadedFiles } = require('../../helpers/multer');
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment');
@@ -22,6 +22,7 @@ const addProduct = async (req, res) => {
         uploadProductImages(req, res, async (err) => {
             try {
                 if (err) {
+                    deleteUploadedFiles(req.files);
                     return res.status(500).send({
                         status: false,
                         message: 'Error during file upload: ' + err.message,
@@ -32,7 +33,8 @@ const addProduct = async (req, res) => {
 
                 const imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
 
-                const { productName, description, originalPrice, offerPrice, discount, quantity, name, price } = req.body;
+                const { productName, description, isAddQuantity, originalPrice, offerPrice,
+                    quantity, weight, discount, name, price } = req.body;
 
                 const product = new productModel({
                     farmerId: req.user._id,
@@ -41,17 +43,45 @@ const addProduct = async (req, res) => {
                     productName: productName,
                     description: description,
                     images: imageFilePaths,
-                    originalPrice: originalPrice,
-                    offerPrice: offerPrice,
-                    discount: discount,
-                    quantity: quantity,
                     time: moment().unix(),
+                    // discount: discount,
                     // addOns: [ {
                     //     image: 'imageFilePaths[ 0 ]',
                     //     name: name,
                     //     price: price
                     // } ]
                 });
+
+                if (isAddQuantity == 'true') {
+                    const originalPriceArray = originalPrice.split(',').map(e => parseFloat(e.trim()));
+                    const offerPriceArray = offerPrice.split(',').map(e => parseFloat(e.trim()));
+                    const quantityArray = quantity.split(',').map(e => parseInt(e.trim(), 10));
+                    const weightArray = weight.split(',').map(e => e.trim());
+
+                    if (originalPriceArray.length !== offerPriceArray.length ||
+                        originalPriceArray.length !== quantityArray.length ||
+                        originalPriceArray.length !== weightArray.length) {
+                        deleteUploadedFiles(req.files);
+                        return res.status(400).send({
+                            status: false,
+                            message: 'All array fields must have the same length',
+                        });
+                    };
+
+                    product.isAddQuantity = true;
+                    product.addQuantity = originalPriceArray.map((price, index) => ({
+                        originalPrice: price,
+                        offerPrice: offerPriceArray[index],
+                        quantity: quantityArray[index],
+                        weight: weightArray[index],
+                    }));
+                }
+                //  else {
+                //     console.log(3333333333333);
+                //     product.originalPrice = parseFloat(originalPrice);
+                //     product.offerPrice = parseFloat(offerPrice);
+                //     product.quantity = parseInt(quantity, 10);
+                // };
 
                 await product.save();
                 return res.status(201).json({
@@ -60,7 +90,8 @@ const addProduct = async (req, res) => {
                     data: product
                 });
             } catch (error) {
-                console.log(error);
+                deleteUploadedFiles(req.files);
+                // console.log(error);
                 return res.status(500).send({
                     status: false,
                     message: error.message,
@@ -212,6 +243,41 @@ const getAllProducts = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
 
+        const product = await productModel.find({ farmerId: req.user._id, isAvailable: true })
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .exec();
+
+        if (!product) {
+            return res.status(404).json({
+                status: false,
+                message: "not found!",
+            })
+        };
+        const totalDocuments = await productModel.countDocuments({ farmerId: req.user._id, isAvailable: true });
+
+        return res.status(200).json({
+            status: true,
+            message: 'successfully fetched',
+            totalDocuments: totalDocuments,
+            data: product
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
+    }
+};
+
+
+// get all products list
+const getAllProductsList = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
         const product = await productModel.find({ isAvailable: true })
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
@@ -239,6 +305,7 @@ const getAllProducts = async (req, res) => {
         });
     }
 };
+
 
 // get all best deal offer products
 const getAllBestDealProducts = async (req, res) => {
@@ -421,6 +488,7 @@ module.exports = {
     // productAddOns,
     updateProduct,
     getAllProducts,
+    getAllProductsList,
     getAllBestDealProducts,
     getProductDetails,
     searchProduct,
@@ -521,3 +589,162 @@ module.exports = {
 // // Example usage:
 // const orderId = generateOrderId();
 // console.log(orderId); // Output: #4b16a74e01cf4b988d910086ad902812
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const addProduct = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const category = await categoryModel.findOne({ _id: id });
+//         if (!category) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: 'Category data not found!'
+//             });
+//         }
+
+//         uploadProductImages(req, res, async (err) => {
+//             try {
+//                 if (err) {
+//                     return res.status(500).send({
+//                         status: false,
+//                         message: 'Error during file upload: ' + err.message,
+//                     });
+//                 }
+
+//                 const images = req.files;
+//                 const imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
+
+//                 const { productName, description, originalPrice, offerPrice, quantity,
+//  weight, isAddQuantity } = req.body;
+
+//                 const product = new productModel({
+//                     farmerId: req.user._id,
+//                     categoryId: category._id,
+//                     category: category.name,
+//                     productName,
+//                     description,
+//                     images: imageFilePaths,
+//                     time: moment().unix(),
+//                 });
+
+//                 if (isAddQuantity) {
+//                     const originalPriceArray = originalPrice.split(',').map(e => parseFloat(e.trim()));
+//                     const offerPriceArray = offerPrice.split(',').map(e => parseFloat(e.trim()));
+//                     const quantityArray = quantity.split(',').map(e => parseInt(e.trim(), 10));
+//                     const weightArray = weight.split(',').map(e => e.trim());
+
+//                     if (originalPriceArray.length !== offerPriceArray.length ||
+//                         originalPriceArray.length !== quantityArray.length ||
+//                         originalPriceArray.length !== weightArray.length) {
+//                         return res.status(400).send({
+//                             status: false,
+//                             message: 'All array fields must have the same length',
+//                         });
+//                     }
+
+
+//                     product.isAddQuantity = true;
+//                     product.addQuantity = originalPriceArray.map((price, index) => ({
+//                         originalPrice: price,
+//                         offerPrice: offerPriceArray[index],
+//                         quantity: quantityArray[index],
+//                         weight: weightArray[index],
+//                     }));
+//                 } else {
+//                     product.originalPrice = parseFloat(originalPrice);
+//                     product.offerPrice = parseFloat(offerPrice);
+//                     product.quantity = parseInt(quantity, 10);
+//                 }
+
+//                 await product.save();
+//                 return res.status(201).json({
+//                     status: true,
+//                     message: 'Successfully created',
+//                     data: product
+//                 });
+//             } catch (error) {
+//                 console.log(error);
+//                 return res.status(500).send({
+//                     status: false,
+//                     message: error.message,
+//                 });
+//             }
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message,
+//         });
+//     }
+// };

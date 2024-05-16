@@ -28,32 +28,56 @@ const productModel = new mongoose.Schema(
             required: true,
             default: null,
         }],
-        originalPrice: {
-            type: Number,
-            required: true,
-            default: 0,
-        },
-        offerPrice: {
-            type: Number,
-            required: true,
-            default: 0,
-        },
-        discount: {
-            type: Number,
-            default: 0,
-        },
-        quantity: {
-            type: Number,
-            default: 1,
-        },
-
-
+        // originalPrice: {
+        //     type: Number,
+        //     required: true,
+        //     default: 0,
+        // },
+        // offerPrice: {
+        //     type: Number,
+        //     required: true,
+        //     default: 0,
+        // },
+        // discount: {
+        //     type: Number,
+        //     default: 0,
+        // },
+        // quantity: {
+        //     type: Number,
+        //     default: 1,
+        // },
         // weight: {
         //     type: String,
         //     default: 'gram',
         // },
+        isAddQuantity: {
+            type: Boolean,
+            default: false,
+        },
+        addQuantity: {
+            type: [{
+                originalPrice: {
+                    type: Number,
+                    required: true,
+                    default: 0,
+                },
+                offerPrice: {
+                    type: Number,
+                    required: true,
+                    default: 0,
+                },
+                quantity: {
+                    type: Number,
+                    default: 1,
+                },
+                weight: {
+                    type: String,
+                    default: 'gram',
+                },
+            }]
+        },
 
-        
+
         // addOns: {
         //     type: [ {
         //         image: {
