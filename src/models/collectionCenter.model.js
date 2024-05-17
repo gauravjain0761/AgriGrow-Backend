@@ -43,9 +43,29 @@ const collectionCenterModel = new mongoose.Schema(
             default: null,
         },
         operationTime: {
-            type: String,
-            default: null,
+            type: [{
+                day: {
+                    type: String,
+                    required: true,
+                    default: null,
+                },
+                open: {
+                    type: String,
+                    required: true,
+                    default: null,
+                },
+                close: {
+                    type: String,
+                    required: true,
+                    default: null,
+                },
+            }],
+            default: [],
         },
+        // operationTime: {
+        //     type: String,
+        //     default: null,
+        // },
         profileImage: {
             type: String,
             default: null,

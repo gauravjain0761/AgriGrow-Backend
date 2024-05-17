@@ -12,7 +12,7 @@ const feedbackModel = new mongoose.Schema(
         },
         rating: {
             type: Number,
-            default: null,
+            default: 0,
         },
         feedback: {
             type: String,
