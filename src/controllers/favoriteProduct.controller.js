@@ -62,7 +62,7 @@ const getAllFavoriteProduct = async ( req, res ) =>
         const favoriteProduct = await favoriteProductModel.find( { userId: req.user._id } )
             .populate( {
                 path: 'productId',
-                select: 'categoryId category name description image availableQuantity price discount status'
+                select: 'categoryId category productName description images addQuantity addOns availableQuantity price discount status'
             } )
             .sort( { createdAt: -1 } )
             .skip( ( page - 1 ) * limit )

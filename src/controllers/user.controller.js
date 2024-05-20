@@ -499,7 +499,7 @@ const getProfile = async (req, res) => {
 // update profile
 const updateProfile = async (req, res) => {
     try {
-        const user = await req.user;
+        const user = req.user;
         uploadProfileImage(req, res, async (err) => {
             try {
                 if (err) {
@@ -555,6 +555,129 @@ const updateProfile = async (req, res) => {
 };
 
 
+// add new address
+const addNewAddress = async (req, res) => {
+    try {
+        const user = req.user;
+        const { state, city, postalCode, streetAddress } = req.body;
+
+        user.deliveryAddress.push({
+            state: state,
+            city: city,
+            postalCode: postalCode,
+            streetAddress: streetAddress
+        });
+
+        await user.save();
+
+        return res.status(200).json({
+            status: true,
+            message: "added successfully",
+            data: user
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message
+        })
+    }
+};
+
+
+// get all address list
+const getAllAddressList = async (req, res) => {
+    try {
+        const user = req.user;
+        const deliveryAddress = user.deliveryAddress.map(data => data);
+        console.log(22222222, deliveryAddress);
+
+        return res.status(200).json({
+            status: true,
+            message: "fetched successfully",
+            userData: user,
+            deliveryAddress: deliveryAddress
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message
+        })
+    }
+};
+
+
+// edit address
+const editAddress = async (req, res) => {
+    try {
+        const user = req.user;
+        const { deliveryAddressId } = req.params;
+        const { state, city, postalCode, streetAddress } = req.body;
+
+        const address = user.deliveryAddress.id(deliveryAddressId);
+        console.log(address);
+
+        if (!address) {
+            return res.status(404).json({
+                status: false,
+                message: "Address not found"
+            });
+        };
+
+        if (state) address.state = state;
+        if (city) address.city = city;
+        if (postalCode) address.postalCode = postalCode;
+        if (streetAddress) address.streetAddress = streetAddress;
+
+        await user.save();
+
+        return res.status(200).json({
+            status: true,
+            message: "updated successfully",
+            data: user
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message
+        })
+    }
+};
+
+
+// delete address
+const deleteAddress = async (req, res) => {
+    try {
+        const user = req.user;
+        const { deliveryAddressId } = req.params;
+
+        // Find the address index by ID
+        const addressIndex = user.deliveryAddress.findIndex(address => address._id.toString() === deliveryAddressId);
+        if (addressIndex === -1) {
+            return res.status(404).json({
+                status: false,
+                message: "Address not found"
+            });
+        };
+
+        // Remove the address from the array
+        user.deliveryAddress.splice(addressIndex, 1);
+
+        await user.save();
+
+        return res.status(200).json({
+            status: true,
+            message: "deleted successfully",
+            data: user
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message
+        })
+    }
+};
+
+
 // user logout
 const userLogout = async (req, res) => {
     try {
@@ -587,6 +710,10 @@ module.exports = {
     signInWithFacebook,
     getProfile,
     updateProfile,
+    addNewAddress,
+    getAllAddressList,
+    editAddress,
+    deleteAddress,
     userLogout
 };
 

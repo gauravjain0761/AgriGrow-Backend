@@ -28,7 +28,13 @@ router.get('/get-profile', passportAuthentication, userRoleMiddleware, controlle
 
 router.patch('/update-profile', passportAuthentication, userRoleMiddleware, userMiddleware.updateProfile, controller.updateProfile);
 
-// router.patch('/addNewDeliveryAddress', passportAuthentication, userRoleMiddleware, controller.addNewDeliveryAddress);
+router.patch('/addNewAddress', passportAuthentication, userRoleMiddleware, controller.addNewAddress);
+
+router.get('/getAllAddressList', passportAuthentication, userRoleMiddleware, controller.getAllAddressList);
+
+router.patch('/editAddress/:deliveryAddressId', passportAuthentication, userRoleMiddleware, controller.editAddress);
+
+router.delete('/deleteAddress/:deliveryAddressId', passportAuthentication, userRoleMiddleware, controller.deleteAddress);
 
 router.post('/logOut', passportAuthentication, controller.userLogout);
 

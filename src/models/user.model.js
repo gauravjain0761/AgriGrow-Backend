@@ -42,22 +42,43 @@ const userModel = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        state: {
-            type: String,
-            default: null,
+        deliveryAddress: {
+            type: [{
+                state: {
+                    type: String,
+                    default: null,
+                },
+                city: {
+                    type: String,
+                    default: null,
+                },
+                postalCode: {
+                    type: String,
+                    default: null,
+                },
+                streetAddress: {
+                    type: String,
+                    default: null,
+                },
+            }],
+            default: []
         },
-        city: {
-            type: String,
-            default: null,
-        },
-        postalCode: {
-            type: String,
-            default: null,
-        },
-        streetAddress: {
-            type: String,
-            default: null,
-        },
+        // state: {
+        //     type: String,
+        //     default: null,
+        // },
+        // city: {
+        //     type: String,
+        //     default: null,
+        // },
+        // postalCode: {
+        //     type: String,
+        //     default: null,
+        // },
+        // streetAddress: {
+        //     type: String,
+        //     default: null,
+        // },
         role: {
             type: String,
             // enum: [ constants.ROLE.USER, constants.ROLE.FARMER ],
