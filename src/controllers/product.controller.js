@@ -8,17 +8,135 @@ const path = require('path');
 const moment = require('moment');
 
 
-// addProduct
+// // addProduct
+// const addProduct = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const category = await categoryModel.findOne({ _id: id });
+//         if (!category) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: 'category data not found!'
+//             })
+//         };
+//         uploadProductImages(req, res, async (err) => {
+//             try {
+//                 if (err) {
+//                     deleteUploadedFiles(req.files);
+//                     return res.status(500).send({
+//                         status: false,
+//                         message: 'Error during file upload: ' + err.message,
+//                     });
+//                 };
+
+//                 const { images, addOnImages } = req.files;
+
+//                 const imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
+//                 const addOnImageFilePaths = addOnImages.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
+
+//                 const { productName, description, originalPrice, offerPrice,
+//                     quantity, weight, discount, name, price } = req.body;
+
+//                 const product = new productModel({
+//                     farmerId: req.user._id,
+//                     categoryId: category.id,
+//                     category: category.name,
+//                     productName: productName,
+//                     description: description,
+//                     images: imageFilePaths,
+//                     time: moment().unix(),
+//                 });
+
+//                 if (originalPrice) {
+//                     const originalPriceArray = originalPrice.split(',').map(e => parseFloat(e.trim()));
+//                     const offerPriceArray = offerPrice.split(',').map(e => parseFloat(e.trim()));
+//                     const quantityArray = quantity.split(',').map(e => parseInt(e.trim(), 10));
+//                     const weightArray = weight.split(',').map(e => e.trim());
+
+//                     if (originalPriceArray.length !== offerPriceArray.length ||
+//                         originalPriceArray.length !== quantityArray.length ||
+//                         originalPriceArray.length !== weightArray.length) {
+//                         deleteUploadedFiles(req.files);
+//                         return res.status(400).send({
+//                             status: false,
+//                             message: 'All array fields must have the same length',
+//                         });
+//                     };
+
+//                     product.addQuantity = originalPriceArray.map((price, index) => ({
+//                         originalPrice: price,
+//                         offerPrice: offerPriceArray[index],
+//                         quantity: quantityArray[index],
+//                         weight: weightArray[index],
+//                     }));
+//                 };
+
+//                 if (name) {
+//                     const addOnNamesArray = name.split(',').map(name => name.trim());
+//                     const addOnPricesArray = price.split(',').map(price => parseFloat(price.trim()));
+
+//                     if (addOnImageFilePaths.length !== addOnNamesArray.length || addOnNamesArray.length !== addOnPricesArray.length) {
+//                         deleteUploadedFiles(req.files);
+//                         return res.status(400).send({
+//                             status: false,
+//                             message: 'All add-on array fields must have the same length',
+//                         });
+//                     };
+
+//                     product.addOns = addOnNamesArray.map((name, index) => ({
+//                         image: addOnImageFilePaths[index],
+//                         name: name,
+//                         price: addOnPricesArray[index],
+//                     }));
+//                 };
+
+//                 await product.save();
+//                 return res.status(201).json({
+//                     status: true,
+//                     message: 'successfully created',
+//                     data: product
+//                 });
+//             } catch (error) {
+//                 deleteUploadedFiles(req.files);
+//                 // console.log(error);
+//                 return res.status(500).send({
+//                     status: false,
+//                     message: error.message,
+//                 });
+//             }
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message,
+//         });
+//     }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const addProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const category = await categoryModel.findOne({ _id: id });
+        const category = await categoryModel.findById(id);
         if (!category) {
             return res.status(404).json({
                 status: false,
-                message: 'category data not found!'
-            })
-        };
+                message: 'Category data not found!'
+            });
+        }
+
         uploadProductImages(req, res, async (err) => {
             try {
                 if (err) {
@@ -27,78 +145,75 @@ const addProduct = async (req, res) => {
                         status: false,
                         message: 'Error during file upload: ' + err.message,
                     });
-                };
+                }
 
                 const { images, addOnImages } = req.files;
-
                 const imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
                 const addOnImageFilePaths = addOnImages.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
 
-                const { productName, description, originalPrice, offerPrice,
-                    quantity, weight, discount, name, price } = req.body;
+                const { productName, description, originalPrice, offerPrice, quantity, weight, name, price } = req.body;
 
-                const product = new productModel({
-                    farmerId: req.user._id,
-                    categoryId: category.id,
-                    category: category.name,
-                    productName: productName,
-                    description: description,
-                    images: imageFilePaths,
-                    time: moment().unix(),
-                });
+                const originalPriceArray = originalPrice.split(',').map(e => parseFloat(e.trim()));
+                const offerPriceArray = offerPrice.split(',').map(e => parseFloat(e.trim()));
+                const quantityArray = quantity.split(',').map(e => parseInt(e.trim(), 10));
+                const weightArray = weight.split(',').map(e => e.trim());
 
-                if (originalPrice) {
-                    const originalPriceArray = originalPrice.split(',').map(e => parseFloat(e.trim()));
-                    const offerPriceArray = offerPrice.split(',').map(e => parseFloat(e.trim()));
-                    const quantityArray = quantity.split(',').map(e => parseInt(e.trim(), 10));
-                    const weightArray = weight.split(',').map(e => e.trim());
+                if (originalPriceArray.length !== offerPriceArray.length ||
+                    originalPriceArray.length !== quantityArray.length ||
+                    originalPriceArray.length !== weightArray.length) {
+                    deleteUploadedFiles(req.files);
+                    return res.status(400).send({
+                        status: false,
+                        message: 'All array fields must have the same length',
+                    });
+                }
 
-                    if (originalPriceArray.length !== offerPriceArray.length ||
-                        originalPriceArray.length !== quantityArray.length ||
-                        originalPriceArray.length !== weightArray.length) {
-                        deleteUploadedFiles(req.files);
-                        return res.status(400).send({
-                            status: false,
-                            message: 'All array fields must have the same length',
-                        });
-                    };
-
-                    product.addQuantity = originalPriceArray.map((price, index) => ({
+                const productPromises = originalPriceArray.map((price, index) => {
+                    const product = new productModel({
+                        farmerId: req.user._id,
+                        categoryId: category._id,
+                        category: category.name,
+                        productName,
+                        description,
+                        images: imageFilePaths,
                         originalPrice: price,
                         offerPrice: offerPriceArray[index],
                         quantity: quantityArray[index],
                         weight: weightArray[index],
-                    }));
-                };
+                        time: moment().unix(),
+                    });
 
-                if (name) {
-                    const addOnNamesArray = name.split(',').map(name => name.trim());
-                    const addOnPricesArray = price.split(',').map(price => parseFloat(price.trim()));
+                    if (name) {
+                        const addOnNamesArray = name.split(',').map(name => name.trim());
+                        const addOnPricesArray = req.body.price.split(',').map(price => parseFloat(price.trim()));
 
-                    if (addOnImageFilePaths.length !== addOnNamesArray.length || addOnNamesArray.length !== addOnPricesArray.length) {
-                        deleteUploadedFiles(req.files);
-                        return res.status(400).send({
-                            status: false,
-                            message: 'All add-on array fields must have the same length',
-                        });
-                    };
+                        if (addOnImageFilePaths.length !== addOnNamesArray.length || addOnNamesArray.length !== addOnPricesArray.length) {
+                            deleteUploadedFiles(req.files);
+                            return res.status(400).send({
+                                status: false,
+                                message: 'All add-on array fields must have the same length',
+                            });
+                        }
 
-                    product.addOns = addOnNamesArray.map((name, index) => ({
-                        image: addOnImageFilePaths[index],
-                        name: name,
-                        price: addOnPricesArray[index],
-                    }));
-                };
+                        product.addOns = addOnNamesArray.map((name, index) => ({
+                            image: addOnImageFilePaths[index],
+                            name,
+                            price: addOnPricesArray[index],
+                        }));
+                    }
 
-                await product.save();
+                    return product.save();
+                });
+
+                const savedProducts = await Promise.all(productPromises);
+
                 return res.status(201).json({
                     status: true,
-                    message: 'successfully created',
-                    data: product
+                    message: 'Products successfully created',
+                    data: savedProducts
                 });
             } catch (error) {
                 deleteUploadedFiles(req.files);
-                // console.log(error);
                 return res.status(500).send({
                     status: false,
                     message: error.message,
@@ -112,6 +227,58 @@ const addProduct = async (req, res) => {
         });
     }
 };
+
+
+
+
+
+
+// const productList = async (req, res) => {
+//     try {
+//         const products = await productModel.find({ isAvailable: true })
+//             .populate('categoryId', 'name')
+//             .populate('farmerId', 'name');
+
+//         return res.status(200).json({
+//             status: true,
+//             message: 'Product list retrieved successfully',
+//             data: products
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message,
+//         });
+//     }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // updateProduct

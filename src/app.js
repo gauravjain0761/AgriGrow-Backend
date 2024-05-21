@@ -85,3 +85,8 @@ app.listen(Port, () => {
 
 
 // driver login credentials ---> 
+
+
+
+
+// not showing the product weight in product list ---- error from frontend
