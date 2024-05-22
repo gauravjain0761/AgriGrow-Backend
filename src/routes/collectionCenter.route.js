@@ -13,6 +13,7 @@ router.get('/getCollectionCenterData', passportAuthentication, ccRoleMiddleware,
 
 router.patch('/updateCollectionCenterData', passportAuthentication, ccRoleMiddleware, controller.updateCollectionCenterData);
 
+router.post('/logOut', passportAuthentication, ccRoleMiddleware, controller.logout);
 
 
 

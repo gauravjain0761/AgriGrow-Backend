@@ -27,13 +27,13 @@ const addProductToCart = async (req, res) => {
                 message: 'please add minimum 1 quantity'
             })
         };
-        // if ( product.availableQuantity < quantity )
-        // {
-        //     return res.status( 400 ).json( {
-        //         status: false,
-        //         message: `available product quantity is ${ product.availableQuantity }`
-        //     } )
-        // };
+        if ( product.quantity < quantity )
+        {
+            return res.status( 400 ).json( {
+                status: false,
+                message: `available product quantity is ${ product.availableQuantity }`
+            } )
+        };
 
         // const totalPrice = quantity * product.price;
         const addProduct = new cartModel({

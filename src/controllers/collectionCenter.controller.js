@@ -258,6 +258,24 @@ exports.updateCollectionCenterData = async (req, res) => {
 };
 
 
+// logout
+exports.logout = async (req, res) => {
+    try {
+        const user = req.user;
+        user.deviceToken = null;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "logout successfully",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+};
 
 
 

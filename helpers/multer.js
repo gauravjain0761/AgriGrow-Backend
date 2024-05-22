@@ -217,8 +217,29 @@ exports.receiverImage = multer({
 
 // -------------------------------------------------------------------------------------
 
+
+const productCategoryImageStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../uploads/productCategoryImages/'));
+    },
+    filename: function (req, file, cb) {
+        cb(null, moment().unix() + "-" + file.originalname);
+    },
+});
+
+exports.uploadProductCategoryImage = multer({
+    storage: productCategoryImageStorage,
+    limits: {
+        fileSize: 5 * 1024 * 1024,
+    },
+}).single("image");
+
+
+// -------------------------------------------------------------------------------------
+
 exports.deleteUploadedFiles = (files) => {
     if (!files) return;
+    console.log(files);
     for (const file of Object.values(files)) {
         if (Array.isArray(file)) {
             for (const f of file) {

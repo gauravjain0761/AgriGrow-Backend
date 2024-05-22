@@ -135,7 +135,7 @@ const addProduct = async (req, res) => {
                 status: false,
                 message: 'Category data not found!'
             });
-        }
+        };
 
         uploadProductImages(req, res, async (err) => {
             try {
@@ -145,9 +145,16 @@ const addProduct = async (req, res) => {
                         status: false,
                         message: 'Error during file upload: ' + err.message,
                     });
-                }
+                };
 
                 const { images, addOnImages } = req.files;
+                if (!images) {
+                    return res.status(400).send({
+                        status: false,
+                        message: 'image is required'
+                    });
+                };
+
                 const imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
                 const addOnImageFilePaths = addOnImages.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
 
@@ -166,7 +173,7 @@ const addProduct = async (req, res) => {
                         status: false,
                         message: 'All array fields must have the same length',
                     });
-                }
+                };
 
                 const productPromises = originalPriceArray.map((price, index) => {
                     const product = new productModel({
@@ -213,6 +220,7 @@ const addProduct = async (req, res) => {
                     data: savedProducts
                 });
             } catch (error) {
+                // console.log(error);
                 deleteUploadedFiles(req.files);
                 return res.status(500).send({
                     status: false,
@@ -364,6 +372,42 @@ const getAllProducts = async (req, res) => {
             })
         };
         const totalDocuments = await productModel.countDocuments({ farmerId: req.user._id, isAvailable: true });
+
+        return res.status(200).json({
+            status: true,
+            message: 'successfully fetched',
+            totalDocuments: totalDocuments,
+            data: product
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
+    }
+};
+
+
+// get all products list by category
+const getProductsListByCategory = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const { categoryId } = req.params;
+        const product = await productModel.find({ categoryId: categoryId, isAvailable: true })
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .exec();
+
+        if (!product) {
+            return res.status(404).json({
+                status: false,
+                message: "not found!",
+            })
+        };
+        const totalDocuments = await productModel.countDocuments({ categoryId: categoryId, isAvailable: true });
 
         return res.status(200).json({
             status: true,
@@ -596,6 +640,7 @@ module.exports = {
     // productAddOns,
     updateProduct,
     getAllProducts,
+    getProductsListByCategory,
     getAllProductsList,
     getAllBestDealProducts,
     getProductDetails,

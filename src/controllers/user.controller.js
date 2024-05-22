@@ -8,7 +8,7 @@ const { sendOtp } = require("../../helpers/sendEmail.helper");
 const constants = require("../../config/constants.json");
 
 
-const { uploadProfileImage } = require('../../helpers/multer');
+const { uploadProfileImage,deleteUploadedFiles } = require('../../helpers/multer');
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment');
@@ -503,6 +503,7 @@ const updateProfile = async (req, res) => {
         uploadProfileImage(req, res, async (err) => {
             try {
                 if (err) {
+                    deleteUploadedFiles(req.files);
                     return res.status(500).send({
                         status: false,
                         message: 'Error during file upload: ' + err.message,
@@ -532,6 +533,7 @@ const updateProfile = async (req, res) => {
                     data: user
                 });
             } catch (error) {
+                deleteUploadedFiles(req.files);
                 console.log(error);
                 if (error.code === 11000 && error.keyPattern && (error.keyPattern.email || error.keyPattern.mobile)) {
                     const violatedKeys = Object.keys(error.keyPattern);
