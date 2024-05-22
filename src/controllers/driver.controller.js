@@ -275,8 +275,8 @@ exports.updateDriverData = async (req, res) => {
                 driver.email = email ? email : driver.email;
                 driver.mobile = mobile ? mobile : driver.mobile;
                 driver.password = password ? mobile : driver.password;
-                driver.licenseNumber = licenseNumber ? mobile : driver.licenseNumber;
-                driver.aadhaarCardNumber = aadhaarCardNumber ? mobile : driver.aadhaarCardNumber;
+                driver.licenseNumber = licenseNumber ? licenseNumber : driver.licenseNumber;
+                driver.aadhaarCardNumber = aadhaarCardNumber ? aadhaarCardNumber : driver.aadhaarCardNumber;
                 driver.aadhaarCardFront = aadhaarCardFront ? aadhaarCardFront : driver.aadhaarCardFront;
                 driver.aadhaarCardBack = aadhaarCardBack ? aadhaarCardBack : driver.aadhaarCardBack;
                 driver.licenseImage = licenseImage ? licenseImage : driver.licenseImage;
@@ -598,3 +598,22 @@ exports.addDriverLocation = async (req, res) => {
 };
 
 
+
+// logout
+exports.logout = async (req, res) => {
+    try {
+        const user = req.user;
+        user.deviceToken = null;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "logout successfully",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+};

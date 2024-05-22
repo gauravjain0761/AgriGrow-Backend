@@ -38,6 +38,7 @@ router.get('/deliveredOrderDetails/:id', passportAuthentication, driverRoleMiddl
 
 router.patch('/addDriverLocation', passportAuthentication, driverRoleMiddleware, controller.addDriverLocation);
 
+router.post('/logOut', passportAuthentication, driverRoleMiddleware, controller.logout);
 
 
 
