@@ -311,7 +311,7 @@ exports.updateDriverData = async (req, res) => {
 exports.removeDriver = async (req, res) => {
     try {
         const { driverId } = req.params;
-        const { user } = req.user;
+        const user = req.user;
 
         const driver = await driverModel.findOne({ _id: driverId, userId: user._id });
         if (!driver) {
