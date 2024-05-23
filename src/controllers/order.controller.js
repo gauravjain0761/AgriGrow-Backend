@@ -23,7 +23,7 @@ exports.addOrder = async (req, res) => {
         await order.save();
         return res.status(201).send({
             status: true,
-            message: 'successfully created',
+            message: 'successfully added',
             data: order
         });
     } catch (error) {
