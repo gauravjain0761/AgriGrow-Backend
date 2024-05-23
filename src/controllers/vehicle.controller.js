@@ -141,7 +141,7 @@ exports.updateVehicleDetails = async (req, res) => {
                 const RC_BookImage = req.files.RC_BookImage ? `/uploads/vehicleImages/${moment().unix()}-${req.files.RC_BookImage[0].originalname}` : null;
                 const vehicleImage = req.files.vehicleImage ? `/uploads/vehicleImages/${moment().unix()}-${req.files.vehicleImage[0].originalname}` : null;
 
-                const vehicle = await vehicleModel.findOne({ _id: vehicleId, /* userId: req.user._id */ });
+                const vehicle = await vehicleModel.findOne({ _id: vehicleId, userId: req.user._id });
                 if (!vehicle) {
                     deleteUploadedFiles(req.files);
                     return res.status(404).json({

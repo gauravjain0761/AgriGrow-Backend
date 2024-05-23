@@ -158,7 +158,7 @@ exports.getCollectionCenterData = async (req, res) => {
     try {
         return res.status(200).json({
             status: true,
-            message: "profile fetched successfully",
+            message: "fetched successfully",
             data: req.user
         })
     } catch (error) {

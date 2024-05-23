@@ -15,10 +15,10 @@ const orderModel = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'driver'
         },
-        orderId: {
-            type: String,
-            default: null,
-        },
+        // orderId: {
+        //     type: String,
+        //     default: null,
+        // },
         status: {
             type: String,
             enum: [constants.ORDER_STATUS.NEW, constants.ORDER_STATUS.SUCCESS, constants.ORDER_STATUS.IN_PROGRESS, constants.ORDER_STATUS.FAILED],
@@ -35,6 +35,10 @@ const orderModel = new mongoose.Schema(
         receiverName: {
             type: String,
             default: null,
+        },
+        assignToDriver: {
+            type: Boolean,
+            default: false,
         },
         isAvailable: {
             type: Boolean,

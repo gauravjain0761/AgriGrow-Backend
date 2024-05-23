@@ -6,6 +6,51 @@ const constants = require("../../config/constants.json");
 const driverModel = require('../models/driver.model');
 
 
+
+
+// add Order
+exports.addOrder = async (req, res) => {
+    try {
+        const user = req.user;
+        const { productId } = req.body;
+
+        const order = new orderModel({
+            userId: user._id,
+            productId: productId,
+            time: moment().unix(),
+        });
+
+        await order.save();
+        return res.status(201).send({
+            status: true,
+            message: 'successfully created',
+            data: order
+        });
+    } catch (error) {
+        return res.status(500).send({
+            status: false,
+            message: error.message,
+        });
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // all order list
 exports.allOrderList = async (req, res) => {
     try {
@@ -13,7 +58,7 @@ exports.allOrderList = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
 
         const order = await orderModel.find(
-            { userId: req.user._id, isAvailable: true }
+            { userId: req.user._id, assignToDriver: false, isAvailable: true }
         )
             .populate({
                 path: 'productId',
@@ -31,7 +76,7 @@ exports.allOrderList = async (req, res) => {
                 message: "not found!",
             })
         };
-        const totalDocuments = await orderModel.countDocuments({ userId: req.user._id, isAvailable: true });
+        const totalDocuments = await orderModel.countDocuments({ userId: req.user._id, assignToDriver: false, isAvailable: true });
 
         return res.status(200).json({
             status: true,
@@ -55,7 +100,7 @@ exports.statusNewOrderList = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
 
         const order = await orderModel.find(
-            { userId: req.user._id, status: constants.ORDER_STATUS.NEW, isAvailable: true }
+            { userId: req.user._id, status: constants.ORDER_STATUS.NEW, assignToDriver: false, isAvailable: true }
         )
             .populate({
                 path: 'productId',
@@ -73,7 +118,7 @@ exports.statusNewOrderList = async (req, res) => {
                 message: "not found!",
             })
         };
-        const totalDocuments = await orderModel.countDocuments({ userId: req.user._id, status: constants.ORDER_STATUS.NEW, isAvailable: true });
+        const totalDocuments = await orderModel.countDocuments({ userId: req.user._id, status: constants.ORDER_STATUS.NEW, assignToDriver: false, isAvailable: true });
 
         return res.status(200).json({
             status: true,
@@ -90,24 +135,35 @@ exports.statusNewOrderList = async (req, res) => {
 };
 
 
-// status new order list
+// assign job to driver
 exports.assignJobToDriver = async (req, res) => {
     try {
         const { productIds, driverId } = req.body;
 
-        const orders = await orderModel.find({ productId: { $in: productIds } });
+        const orders = await orderModel.find({ productId: { $in: productIds }, userId: req.user._id, assignToDriver: false });
+        console.log('orders ------> ', orders);
+
+        if (orders.length === 0) {
+            return res.status(404).json({
+                status: false,
+                message: 'No orders found for the given product IDs or all orders are already assigned to a driver.',
+            });
+        };
 
         // Separate found orders from not found ones
         const foundOrders = orders.filter(order => order.productId);
-        const notFoundProductIds = productIds.filter(productId => !orders.some(order => order.productId === productId));
+        // console.log(foundOrders);
 
-        // Handle not found product IDs
-        if (notFoundProductIds.length > 0) {
-            return res.status(404).json({
-                status: false,
-                message: `Orders not found for the following product IDs: ${notFoundProductIds.join(', ')}`,
-            });
-        };
+        // const notFoundProductIds = productIds.filter(productId => !orders.some(order => order.productId === productId));
+        // console.log('notFoundProductIds',notFoundProductIds)
+
+        // // Handle not found product IDs
+        // if (notFoundProductIds.length > 0) {
+        //     return res.status(404).json({
+        //         status: false,
+        //         message: `Orders not found for the following product IDs: ${notFoundProductIds.join(', ')}`,
+        //     });
+        // };
 
         const driver = await driverModel.findOne({ _id: driverId });
         if (!driver) {
@@ -120,7 +176,10 @@ exports.assignJobToDriver = async (req, res) => {
         // Update found orders with the assigned driver ID
         const updatedOrders = await Promise.all(foundOrders.map(async (order) => {
             order.driverId = driverId;
-            return order.save();
+            order.assignToDriver = true;
+            // return order.save();
+            await order.save();
+            return order;
         }));
 
         return res.status(200).json({
@@ -145,7 +204,7 @@ exports.searchOrderByOrderId = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const user = req.user;
 
-        const order = await orderModel.find({ orderId: orderId, userId: user._id })
+        const order = await orderModel.find({ _id: orderId, userId: user._id, assignToDriver: false })
             .sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).exec();
 
         if (!order) {

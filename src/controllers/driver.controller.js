@@ -189,7 +189,7 @@ exports.updateDriverStatus = async (req, res) => {
         const { driverId } = req.params;
         const { status } = req.body;
 
-        const driver = await driverModel.findOne({ _id: driverId, /* userId: req.user._id */ });
+        const driver = await driverModel.findOne({ _id: driverId, userId: req.user._id });
         if (!driver) {
             return res.status(404).json({
                 status: false,
@@ -240,7 +240,7 @@ exports.updateDriverData = async (req, res) => {
                 const aadhaarCardBack = req.files.aadhaarCardBack ? `/uploads/driverImages/${moment().unix()}-${req.files.aadhaarCardBack[0].originalname}` : null;
                 const licenseImage = req.files.licenseImage ? `/uploads/driverImages/${moment().unix()}-${req.files.licenseImage[0].originalname}` : null;
 
-                const driver = await driverModel.findOne({ _id: driverId, /* userId: req.user._id */ });
+                const driver = await driverModel.findOne({ _id: driverId, userId: req.user._id });
                 if (!driver) {
                     deleteUploadedFiles(req.files);
                     return res.status(404).json({
@@ -617,3 +617,6 @@ exports.logout = async (req, res) => {
         })
     }
 };
+
+
+

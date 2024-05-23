@@ -83,7 +83,7 @@ const userLogin = async (req, res) => {
         let user;
         for (const model of userModels) {
             user = await model.findOne({ $or: [query], role: role });
-            console.log(user);
+            // console.log(user);
             if (user) break; // If user is found, break the loop
         };
 
