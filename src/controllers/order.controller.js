@@ -1,9 +1,8 @@
 const orderModel = require('../models/order.model');
 const moment = require('moment');
-const path = require('path');
-const fs = require('fs');
 const constants = require("../../config/constants.json");
 const driverModel = require('../models/driver.model');
+const productModel = require('../models/product.model');
 
 
 
@@ -13,6 +12,15 @@ exports.addOrder = async (req, res) => {
     try {
         const user = req.user;
         const { productId } = req.body;
+
+        const product = await productModel.find({ _id: productId });
+
+        if (product.length === 0) {
+            return res.status(404).json({
+                status: false,
+                message: "product not found!",
+            })
+        };
 
         const order = new orderModel({
             userId: user._id,
@@ -33,21 +41,6 @@ exports.addOrder = async (req, res) => {
         });
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -76,6 +69,7 @@ exports.allOrderList = async (req, res) => {
                 message: "not found!",
             })
         };
+
         const totalDocuments = await orderModel.countDocuments({ userId: req.user._id, assignToDriver: false, isAvailable: true });
 
         return res.status(200).json({
