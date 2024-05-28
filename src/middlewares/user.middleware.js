@@ -54,25 +54,24 @@ const sendResetPasswordOtp = [
     }
 ];
 
-// const resetPassword = [
-//     check('email').trim().notEmpty().withMessage('Email is required').isEmail().withMessage('Invalid Email'),
-//     check('newPassword').trim().notEmpty().withMessage('Password is required').isLength({ min: 9 }).withMessage('Password must be at least 9 characters long')
-//         .matches(/^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[A-Z])/).withMessage('Password must contain at least one number, one special character, and one uppercase letter'),
-//     check('confirmPassword').trim().notEmpty().withMessage('confirmPassword is required').isLength({ min: 9 }).withMessage('confirmPassword must be at least 9 characters long')
-//         .matches(/^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[A-Z])/).withMessage('confirmPassword must contain at least one number, one special character and one uppercase letter'),
-//     check('otp').trim().notEmpty().withMessage('OTP is required'),
+const resetPassword = [
+    check('email').trim().notEmpty().withMessage('Email is required').isEmail().withMessage('Invalid Email'),
+    check('newPassword').trim().notEmpty().withMessage('Password is required').isLength({ min: 9 }).withMessage('Password must be at least 9 characters long')
+        .matches(/^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[A-Z])/).withMessage('Password must contain at least one number, one special character, and one uppercase letter'),
+    check('confirmPassword').trim().notEmpty().withMessage('confirmPassword is required').isLength({ min: 9 }).withMessage('confirmPassword must be at least 9 characters long')
+        .matches(/^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[A-Z])/).withMessage('confirmPassword must contain at least one number, one special character and one uppercase letter'),
 
-//     (req, res, next) => {
-//         const errors = validationResult(req);
-//         if (!errors.isEmpty()) {
-//             return res.status(400).json({
-//                 status: false,
-//                 errors: errors.array()
-//             });
-//         }
-//         return next();
-//     }
-// ];
+    (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                status: false,
+                errors: errors.array()
+            });
+        }
+        return next();
+    }
+];
 
 const loginWithMobileNumber = [
     check('mobile').trim().notEmpty().withMessage('Mobile is required').isMobilePhone().withMessage('Invalid Contact Number'),
@@ -162,7 +161,7 @@ module.exports = {
     userSignUp,
     // userLogin,
     sendResetPasswordOtp,
-    // resetPassword,
+    resetPassword,
     loginWithMobileNumber,
     verifyVerificationCode,
     signInWithGoogle,

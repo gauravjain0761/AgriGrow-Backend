@@ -100,9 +100,14 @@ const userLogin = async (req, res) => {
                 message: `${user.email}, your status is inactive from Collection Center.`,
             });
         };
-        if (user.role === constants.ROLE.USER && user.isAvailable === true) {
-            console.log(1111111111111);
-        };
+
+        // 29/05
+        // if (user.role === constants.ROLE.USER && user.isVerified === false) {
+        //     return res.status(400).send({
+        //         status: false,
+        //         message: `${user.email}, before login please verify your account.`,
+        //     });
+        // };
 
         const decryptedPass = crypto.AES.decrypt(
             user.password,
@@ -260,10 +265,53 @@ const sendResetPasswordOtp = async (req, res) => {
     }
 };
 
+
+// verify verification code
+const verifyResetPasswordOTP = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        const user = await userModel.findOne({ email: email });
+        if (!user) {
+            return res.status(404).send({
+                status: false,
+                message: "User Not Found!",
+            });
+        };
+        if (user.otp !== otp) {
+            return res.status(404).send({
+                status: false,
+                message: "OTP not matched!"
+            });
+        };
+        if (user.otpValidTill < new Date()) {
+            return res.status(404).send({
+                status: false,
+                message: "OTP valid for only 10 minutes, please use new OTP!"
+            });
+        };
+
+        user.otp = null;
+        await user.save();
+
+        return res.status(200).send({
+            status: true,
+            message: "verification code verify successfully",
+            data: user,
+        });
+    } catch (error) {
+        return res.status(500).send({
+            status: false,
+            message: error.message
+        })
+    }
+};
+
+
 // reset password
 const resetPassword = async (req, res) => {
     try {
-        const { newPassword, confirmPassword, email, otp } = req.body;
+        const { newPassword, confirmPassword, email } = req.body;
 
         const user = await userModel.findOne({ email: email.toLowerCase() });
         if (!user) {
@@ -271,19 +319,7 @@ const resetPassword = async (req, res) => {
                 status: false,
                 message: "User not found!"
             });
-        }
-        if (user.otpValidTill < new Date()) {
-            return res.status(404).send({
-                status: false,
-                message: "OTP valid for only 10 minutes, please use new OTP!"
-            });
-        }
-        if (user.otp !== otp) {
-            return res.status(404).send({
-                status: false,
-                message: "OTP not matched!"
-            });
-        }
+        };
 
         const decryptedPass = crypto.AES.decrypt(user.password, process.env.secretKey).toString(crypto.enc.Utf8);
         // console.log( decryptedPass );
@@ -708,6 +744,7 @@ module.exports = {
     userSignUp,
     userLogin,
     sendResetPasswordOtp,
+    verifyResetPasswordOTP,
     resetPassword,
     loginWithMobileNumber,
     verifyVerificationCode,
