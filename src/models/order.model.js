@@ -36,6 +36,10 @@ const orderModel = new mongoose.Schema(
             type: String,
             default: null,
         },
+        reason: {
+            type: String,
+            default: null,
+        },
         assignToDriver: {
             type: Boolean,
             default: false,

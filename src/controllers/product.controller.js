@@ -156,7 +156,6 @@ const addProduct = async (req, res) => {
                 };
 
                 const imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
-                const addOnImageFilePaths = addOnImages.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
 
                 const { productName, description, originalPrice, offerPrice, quantity, weight, name, price } = req.body;
 
@@ -191,6 +190,7 @@ const addProduct = async (req, res) => {
                     });
 
                     if (name) {
+                        const addOnImageFilePaths = addOnImages.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
                         const addOnNamesArray = name.split(',').map(name => name.trim());
                         const addOnPricesArray = req.body.price.split(',').map(price => parseFloat(price.trim()));
 

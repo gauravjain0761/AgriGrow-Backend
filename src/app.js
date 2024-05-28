@@ -19,6 +19,7 @@ mongoose.connection.on('open', () => {
 
 const userRoutes = require('./routes/user.route');
 const farmerRoutes = require('./routes/farmer.route');
+const farmerOrderRoutes = require('./routes/farmerOrder.route');
 const productRoutes = require('./routes/product.route');
 const favoriteProductRoutes = require('./routes/favoriteProduct.route');
 const cartRoutes = require('./routes/cart.route');
@@ -32,6 +33,7 @@ const orderRoutes = require('./routes/order.route');
 
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/farmer', farmerRoutes);
+app.use('/api/v1/farmerOrder', farmerOrderRoutes);
 app.use('/api/v1/product', productRoutes);
 app.use('/api/v1/favoriteProduct', favoriteProductRoutes);
 app.use('/api/v1/cart', cartRoutes);
@@ -84,9 +86,17 @@ app.listen(Port, () => {
 
 
 
-// driver login credentials ---> 
-
-
-
-
 // not showing the product weight in product list ---- error from frontend
+
+
+
+
+
+
+
+
+
+// inprogress
+// failed
+// verification code ----> isVerified
+// farmer order list

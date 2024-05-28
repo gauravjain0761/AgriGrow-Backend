@@ -121,6 +121,11 @@ const productSchema = new mongoose.Schema({
         ref: 'category',
         required: true,
     },
+    // userId: [{
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'user',
+    //     default: null
+    // }],
     category: {
         type: String,
         default: null,
@@ -150,7 +155,7 @@ const productSchema = new mongoose.Schema({
     },
     quantity: {
         type: Number,
-        default: 1,
+        default: 0,
     },
     weight: {
         type: String,

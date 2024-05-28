@@ -134,7 +134,7 @@ exports.assignJobToDriver = async (req, res) => {
     try {
         const { productIds, driverId } = req.body;
 
-        const orders = await orderModel.find({ productId: { $in: productIds }, userId: req.user._id, assignToDriver: false });
+        const orders = await orderModel.find({ _id: { $in: productIds }, userId: req.user._id, assignToDriver: false });
         console.log('orders ------> ', orders);
 
         if (orders.length === 0) {
@@ -145,7 +145,7 @@ exports.assignJobToDriver = async (req, res) => {
         };
 
         // Separate found orders from not found ones
-        const foundOrders = orders.filter(order => order.productId);
+        const foundOrders = orders.filter(order => order._id);
         // console.log(foundOrders);
 
         // const notFoundProductIds = productIds.filter(productId => !orders.some(order => order.productId === productId));

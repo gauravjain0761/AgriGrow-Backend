@@ -8,7 +8,7 @@ const { sendOtp } = require("../../helpers/sendEmail.helper");
 const constants = require("../../config/constants.json");
 
 
-const { uploadProfileImage,deleteUploadedFiles } = require('../../helpers/multer');
+const { uploadProfileImage, deleteUploadedFiles } = require('../../helpers/multer');
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment');
@@ -83,7 +83,7 @@ const userLogin = async (req, res) => {
         let user;
         for (const model of userModels) {
             user = await model.findOne({ $or: [query], role: role });
-            // console.log(user);
+            console.log(user);
             if (user) break; // If user is found, break the loop
         };
 
@@ -99,6 +99,9 @@ const userLogin = async (req, res) => {
                 status: false,
                 message: `${user.email}, your status is inactive from Collection Center.`,
             });
+        };
+        if (user.role === constants.ROLE.USER && user.isAvailable === true) {
+            console.log(1111111111111);
         };
 
         const decryptedPass = crypto.AES.decrypt(
@@ -381,6 +384,7 @@ const verifyVerificationCode = async (req, res) => {
 
         user.deviceToken = deviceToken;
         user.otp = null;
+        user.isVerified = true;
         await user.save();
 
         return res.status(200).send({
@@ -449,7 +453,6 @@ const signInWithFacebook = async (req, res) => {
         };
 
         const user = await userModel.findOne(query);
-
 
         if (!user) {
             return res.status(404).json({

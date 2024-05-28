@@ -14,7 +14,7 @@ router.post('/login',/*  userMiddleware.userLogin, */ controller.userLogin);
 
 router.post('/send-reset-password-otp', userMiddleware.sendResetPasswordOtp, controller.sendResetPasswordOtp);
 
-router.post('/reset-password', userMiddleware.resetPassword, controller.resetPassword);
+router.post('/reset-password', controller.resetPassword);
 
 router.post('/login-with-mobileNumber', userMiddleware.loginWithMobileNumber, controller.loginWithMobileNumber);
 

@@ -86,7 +86,7 @@ exports.allDriverList = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const user = req.user;
 
-        const driver = await driverModel.find({ userId: user._id, isAvailable: true })
+        const driver = await driverModel.find({ userId: user._id })
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
@@ -98,7 +98,7 @@ exports.allDriverList = async (req, res) => {
                 message: "not found!",
             })
         };
-        const totalDocuments = await driverModel.countDocuments({ userId: user._id, isAvailable: true })
+        const totalDocuments = await driverModel.countDocuments({ userId: user._id })
 
         return res.status(200).json({
             status: true,
@@ -422,7 +422,7 @@ exports.driverAllOrderList = async (req, res) => {
                 message: "not found!",
             })
         };
-        const totalDocuments = await orderModel.countDocuments({ userId: req.user._id, isAvailable: true });
+        const totalDocuments = await orderModel.countDocuments({ driverId: req.user._id, isAvailable: true });
 
         return res.status(200).json({
             status: true,
@@ -440,42 +440,108 @@ exports.driverAllOrderList = async (req, res) => {
 
 
 
-// // deliver order
-// exports.deliverOrder = async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         const user = req.user;
+// update order status from New to inProgree
+exports.updateOrederStatus = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { status } = req.body;
+        const user = req.user;
 
-// const order = await orderModel.findOne({ _id: id, driverId: user._id, isAvailable: true });
+        const order = await orderModel.findOne({ _id: orderId, driverId: user._id });
+        if (!order) {
+            return res.status(404).json({
+                status: false,
+                message: "order not found!",
+            })
+        };
 
-//         if (!order) {
-//             return res.status(404).json({
-//                 status: false,
-//                 message: "not found!",
-//             })
-//         };
-//         // first driver scan the qr code of customer mobile
-//         // here if product qr code matched with customer qr code then successfull
+        order.status = status.toUpperCase();
+        await order.save();
 
-//         order.status = constants.ORDER_STATUS.SUCCESS;
-// order.receiverName = 'Self';
-//         order.isAvailable = false;
-// order.time = moment().unix();
-//         // also update the product model
-//         order.save();
+        return res.status(200).json({
+            status: true,
+            message: 'order status updated successfully',
+            data: order
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
+    }
+};
 
-//         return res.status(200).json({
-//             status: true,
-//             message: 'order deleivered successfully',
-//             data: order
-//         });
-//     } catch (error) {
-//         return res.status(500).json({
-//             status: false,
-//             message: error.message,
-//         });
-//     }
-// };
+
+// faileds order
+exports.failedOrder = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { reason } = req.body;
+        const user = req.user;
+
+        const order = await orderModel.findOne({ _id: orderId, driverId: user._id, status: "IN_PROGRESS" });
+        if (!order) {
+            return res.status(404).json({
+                status: false,
+                message: "order not found!",
+            })
+        };
+
+        order.status = constants.ORDER_STATUS.FAILED;
+        order.reason = reason;
+        await order.save();
+
+        return res.status(200).json({
+            status: true,
+            message: 'failed order',
+            data: order
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
+    }
+};
+
+
+
+// deliver order
+exports.deliverOrder = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const user = req.user;
+
+        const order = await orderModel.findOne({ _id: orderId, driverId: user._id, status: "IN_PROGRESS", isAvailable: true });
+
+        if (!order) {
+            return res.status(404).json({
+                status: false,
+                message: "not found!",
+            })
+        };
+        // first driver scan the qr code of customer mobile
+        // here if product qr code matched with customer qr code then successfull
+
+        order.status = constants.ORDER_STATUS.SUCCESS;
+        order.receiverName = 'Self';
+        order.isAvailable = false;
+        order.time = moment().unix();
+        // also update the product model
+        await order.save();
+
+        return res.status(200).json({
+            status: true,
+            message: 'order deleivered successfully',
+            data: order
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
+    }
+};
 
 
 
@@ -500,7 +566,7 @@ exports.customerNotAvailable = async (req, res) => {
                 const receiverImage = req.files.receiverImage ? `/uploads/receiverImages/${moment().unix()}-${req.files.receiverImage.originalname}` : null;
                 const { receiverName } = req.body;
 
-                const order = await orderModel.findOne({ _id: id, driverId: user._id, isAvailable: true });
+                const order = await orderModel.findOne({ _id: id, driverId: user._id, status: "IN_PROGRESS", isAvailable: true });
 
                 if (!order) {
                     return res.status(404).json({
@@ -515,7 +581,7 @@ exports.customerNotAvailable = async (req, res) => {
                 order.isAvailable = false;
                 order.time = moment().unix();
                 // also update the product model
-                order.save();
+                await order.save();
 
                 return res.status(200).json({
                     status: true,
