@@ -126,7 +126,7 @@ const userLogin = async (req, res) => {
         let user;
         for (const model of userModels) {
             user = await model.findOne({ $or: [query], role: role });
-            console.log(user);
+            // console.log(user);
             if (user) break; // If user is found, break the loop
         };
 
@@ -148,7 +148,9 @@ const userLogin = async (req, res) => {
             return res.status(400).send({
                 status: false,
                 message: `${user.email}, before login please verify your account.`,
-                isVerified: user.isVerified
+                isVerified: user.isVerified,
+                mobile: user.mobile,
+                data: user
             });
         };
 
