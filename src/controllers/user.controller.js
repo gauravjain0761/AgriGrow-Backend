@@ -29,6 +29,12 @@ const userSignUp = async (req, res) => {
             deviceToken: deviceToken
         });
 
+        const getOtp = generateRandomNumber(4);
+        user.otp = getOtp;
+        const otpValidTill = new Date();
+        otpValidTill.setMinutes(otpValidTill.getMinutes() + 10);
+        user.otpValidTill = otpValidTill;
+
         await user.save();
         return res.status(201).send({
             status: true,
