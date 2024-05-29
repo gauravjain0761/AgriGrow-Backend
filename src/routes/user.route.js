@@ -10,13 +10,15 @@ const { userRoleMiddleware } = require('../../config/userRoleMiddleware');
 
 router.post('/sign-up', userMiddleware.userSignUp, controller.userSignUp);
 
+router.post('/updateMobileNumber', controller.updateMobileNumber);
+
 router.post('/login',/*  userMiddleware.userLogin, */ controller.userLogin);
 
 router.post('/send-reset-password-otp', userMiddleware.sendResetPasswordOtp, controller.sendResetPasswordOtp);
 
 router.post('/verifyResetPasswordOTP', controller.verifyResetPasswordOTP);
 
-router.post('/reset-password',userMiddleware.resetPassword, controller.resetPassword);
+router.post('/reset-password', userMiddleware.resetPassword, controller.resetPassword);
 
 router.post('/login-with-mobileNumber', userMiddleware.loginWithMobileNumber, controller.loginWithMobileNumber);
 

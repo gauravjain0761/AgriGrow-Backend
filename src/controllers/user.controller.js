@@ -52,6 +52,48 @@ const userSignUp = async (req, res) => {
     }
 };
 
+
+// update mobile number
+const updateMobileNumber = async (req, res) => {
+    try {
+        const { email, mobile } = req.body;
+
+        const user = await userModel.findOne({ email: email, mobile: mobile })
+        if (!user) {
+            return res.status(404).send({
+                status: false,
+                message: "User Not Found!",
+            });
+        };
+
+        const existingUser = await userModel.findOne({ mobile: mobile });
+        if (existingUser) {
+            return res.status(409).send({
+                status: false,
+                message: "User already exists!",
+            });
+        };
+
+        // vehicle.vehicleName = vehicleName ? vehicleName : vehicle.vehicleName;
+        user.mobile = mobile ? mobile : user.mobile;
+
+        await user.save();
+        return res.status(200).send({
+            status: true,
+            message: `mobile number updated successfully`,
+            data: user
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({
+            status: false,
+            message: error.message,
+        });
+    }
+};
+
+
+
 // login
 const userLogin = async (req, res) => {
     try {
@@ -105,6 +147,7 @@ const userLogin = async (req, res) => {
             return res.status(400).send({
                 status: false,
                 message: `${user.email}, before login please verify your account.`,
+                isVerified:user.isVerified
             });
         };
 
@@ -741,6 +784,7 @@ const userLogout = async (req, res) => {
 
 module.exports = {
     userSignUp,
+    updateMobileNumber,
     userLogin,
     sendResetPasswordOtp,
     verifyResetPasswordOTP,
