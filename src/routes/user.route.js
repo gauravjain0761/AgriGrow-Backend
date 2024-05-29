@@ -10,7 +10,7 @@ const { userRoleMiddleware } = require('../../config/userRoleMiddleware');
 
 router.post('/sign-up', userMiddleware.userSignUp, controller.userSignUp);
 
-router.post('/updateMobileNumber', controller.updateMobileNumber);
+router.patch('/updateMobileNumber', controller.updateMobileNumber);
 
 router.post('/login',/*  userMiddleware.userLogin, */ controller.userLogin);
 

@@ -42,7 +42,7 @@ const userSignUp = async (req, res) => {
             console.log(violatedKeys);
             return res.status(400).json({
                 status: false,
-                message: `${violatedKeys} is already registered. Please use a different ${violatedKeys}.`,
+                message: `${violatedKeys} is already registered. Please use a different ${violatedKeys} or login.`,
             });
         }
         return res.status(500).send({
@@ -58,7 +58,8 @@ const updateMobileNumber = async (req, res) => {
     try {
         const { email, mobile } = req.body;
 
-        const user = await userModel.findOne({ email: email, mobile: mobile })
+        const user = await userModel.findOne({ email: email });
+        // console.log('user---->', user);
         if (!user) {
             return res.status(404).send({
                 status: false,
@@ -66,16 +67,17 @@ const updateMobileNumber = async (req, res) => {
             });
         };
 
-        const existingUser = await userModel.findOne({ mobile: mobile });
-        if (existingUser) {
-            return res.status(409).send({
-                status: false,
-                message: "User already exists!",
-            });
+        // Check if the new mobile number already exists in the database
+        if (mobile) {
+            const existingUser = await userModel.findOne({ mobile: mobile });
+            if (existingUser && existingUser._id.toString() !== user._id.toString()) {
+                return res.status(409).send({
+                    status: false,
+                    message: "Mobile number already exists!",
+                });
+            }
+            user.mobile = mobile;
         };
-
-        // vehicle.vehicleName = vehicleName ? vehicleName : vehicle.vehicleName;
-        user.mobile = mobile ? mobile : user.mobile;
 
         await user.save();
         return res.status(200).send({
@@ -91,7 +93,6 @@ const updateMobileNumber = async (req, res) => {
         });
     }
 };
-
 
 
 // login
@@ -810,3 +811,16 @@ module.exports = {
 // const id = '662a45c464557b992225c70c';
 // const last7Digits = id.slice(-7); // This gets the last 7 characters of the string
 // console.log(last7Digits); // Output: '225c70c'
+
+
+
+
+
+
+
+
+
+
+
+
+
