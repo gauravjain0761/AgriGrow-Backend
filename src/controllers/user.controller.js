@@ -147,7 +147,7 @@ const userLogin = async (req, res) => {
             return res.status(400).send({
                 status: false,
                 message: `${user.email}, before login please verify your account.`,
-                isVerified:user.isVerified
+                isVerified: user.isVerified
             });
         };
 
