@@ -15,6 +15,8 @@ router.post( '/login', farmerMiddleware.farmerLogin, controller.farmerLogin );
 
 router.post( '/send-reset-password-otp', controller.sendResetPasswordOtp );
 
+router.post('/verifyResetPasswordOTP', controller.verifyResetPasswordOTP);
+
 router.post( '/reset-password', controller.resetPassword );
 
 router.post( '/login-with-mobileNumber', controller.loginWithMobileNumber );

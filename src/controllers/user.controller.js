@@ -101,13 +101,12 @@ const userLogin = async (req, res) => {
             });
         };
 
-        // 29/05
-        // if (user.role === constants.ROLE.USER && user.isVerified === false) {
-        //     return res.status(400).send({
-        //         status: false,
-        //         message: `${user.email}, before login please verify your account.`,
-        //     });
-        // };
+        if (user.role === constants.ROLE.USER && user.isVerified === false) {
+            return res.status(400).send({
+                status: false,
+                message: `${user.email}, before login please verify your account.`,
+            });
+        };
 
         const decryptedPass = crypto.AES.decrypt(
             user.password,

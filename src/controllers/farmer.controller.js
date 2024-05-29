@@ -159,7 +159,14 @@ const farmerLogin = async (req, res) => {
                 status: false,
                 message: "not found!",
             });
-        }
+        };
+
+        if (farmer.isVerified === false) {
+            return res.status(400).send({
+                status: false,
+                message: `${farmer.email}, before login please verify your account.`,
+            });
+        };
 
         const decryptedPass = crypto.AES.decrypt(
             farmer.password,
@@ -233,10 +240,53 @@ const sendResetPasswordOtp = async (req, res) => {
     }
 };
 
+
+// verify verification code
+const verifyResetPasswordOTP = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        const farmer = await farmerModel.findOne({ email: email });
+        if (!farmer) {
+            return res.status(404).send({
+                status: false,
+                message: "farmer Not Found!",
+            });
+        };
+        if (farmer.otp !== otp) {
+            return res.status(404).send({
+                status: false,
+                message: "OTP not matched!"
+            });
+        };
+        if (farmer.otpValidTill < new Date()) {
+            return res.status(404).send({
+                status: false,
+                message: "OTP valid for only 10 minutes, please use new OTP!"
+            });
+        };
+
+        farmer.otp = null;
+        await farmer.save();
+
+        return res.status(200).send({
+            status: true,
+            message: "verification code verify successfully",
+            data: farmer,
+        });
+    } catch (error) {
+        return res.status(500).send({
+            status: false,
+            message: error.message
+        })
+    }
+};
+
+
 // reset password
 const resetPassword = async (req, res) => {
     try {
-        const { newPassword, confirmPassword, email, otp } = req.body;
+        const { newPassword, confirmPassword, email } = req.body;
 
         const farmer = await farmerModel.findOne({ email: email.toLowerCase() });
         if (!farmer) {
@@ -244,19 +294,7 @@ const resetPassword = async (req, res) => {
                 status: false,
                 message: "farmer not found!"
             });
-        }
-        if (farmer.otpValidTill < new Date()) {
-            return res.status(404).send({
-                status: false,
-                message: "OTP valid for only 10 minutes, please use new OTP!"
-            });
-        }
-        if (farmer.otp !== otp) {
-            return res.status(404).send({
-                status: false,
-                message: "OTP not matched!"
-            });
-        }
+        };
 
         const decryptedPass = crypto.AES.decrypt(farmer.password, process.env.secretKey).toString(crypto.enc.Utf8);
         // console.log( decryptedPass );
@@ -357,6 +395,7 @@ const verifyVerificationCode = async (req, res) => {
 
         farmer.deviceToken = deviceToken;
         farmer.otp = null;
+        farmer.isVerified = true;
         await farmer.save();
 
         return res.status(200).send({
@@ -672,6 +711,7 @@ module.exports = {
     farmerSignUp,
     farmerLogin,
     sendResetPasswordOtp,
+    verifyResetPasswordOTP,
     resetPassword,
     loginWithMobileNumber,
     verifyVerificationCode,
