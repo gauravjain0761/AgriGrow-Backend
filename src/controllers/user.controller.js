@@ -311,6 +311,7 @@ const sendResetPasswordOtp = async (req, res) => {
         return res.status(200).send({
             status: true,
             message: `Your OTP for Password Reset is send to ${user.email} successfully`,
+            data: user
         });
     } catch (error) {
         console.log(error);

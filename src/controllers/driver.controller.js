@@ -85,7 +85,7 @@ exports.allDriverList = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const user = req.user;
-
+        // console.log(user);
         const driver = await driverModel.find({ userId: user._id })
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
@@ -652,7 +652,7 @@ exports.addDriverLocation = async (req, res) => {
 
         return res.status(200).json({
             status: true,
-            message: 'successfully added',
+            message: 'successfully driver location added',
             userData: user
         });
     } catch (error) {
