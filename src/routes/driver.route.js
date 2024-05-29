@@ -14,6 +14,8 @@ router.get('/allDriverList', passportAuthentication, ccRoleMiddleware, controlle
 
 router.get('/getDriverDetailsById/:driverId', passportAuthentication, controller.getDriverDetailsById);
 
+router.get('/getDriverAllOrdersList/:driverId', passportAuthentication, ccRoleMiddleware, controller.getDriverAllOrdersList);
+
 router.post('/searchDriver', passportAuthentication, ccRoleMiddleware, controller.searchDriver);
 
 router.patch('/updateDriverData/:driverId', passportAuthentication, ccRoleMiddleware, controller.updateDriverData);

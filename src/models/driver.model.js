@@ -13,8 +13,13 @@ const driverModel = new mongoose.Schema(
         //     ref: 'farmer',
         //     default: null
         // },
-        userId: {
+        // userId: {
+        //     type: mongoose.Schema.Types.ObjectId,
+        // },
+        collectionCenterId: {
             type: mongoose.Schema.Types.ObjectId,
+            ref: 'collectionCenter',
+            required: true,
         },
         name: {
             type: String,
@@ -31,7 +36,7 @@ const driverModel = new mongoose.Schema(
         },
         password: {
             type: String,
-            // required: true,
+            required: true,
             default: null,
         },
         mobile: {

@@ -32,7 +32,7 @@ exports.addDriver = async (req, res) => {
                 const licenseImage = req.files.licenseImage ? `/uploads/driverImages/${moment().unix()}-${req.files.licenseImage[0].originalname}` : null;
 
                 const driver = new driverModel({
-                    userId: user._id,
+                    collectionCenterId: user._id,
                     name: name,
                     email: email,
                     mobile: mobile,
@@ -86,7 +86,7 @@ exports.allDriverList = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const user = req.user;
         // console.log(user);
-        const driver = await driverModel.find({ userId: user._id })
+        const driver = await driverModel.find({ collectionCenterId: user._id })
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
@@ -98,7 +98,7 @@ exports.allDriverList = async (req, res) => {
                 message: "not found!",
             })
         };
-        const totalDocuments = await driverModel.countDocuments({ userId: user._id })
+        const totalDocuments = await driverModel.countDocuments({ collectionCenterId: user._id })
 
         return res.status(200).json({
             status: true,
@@ -121,7 +121,7 @@ exports.getDriverDetailsById = async (req, res) => {
         const driverId = req.params.driverId;
         const user = req.user;
 
-        const driver = await driverModel.findOne({ _id: driverId, userId: user._id });
+        const driver = await driverModel.findOne({ _id: driverId, collectionCenterId: user._id });
 
         if (!driver) {
             return res.status(404).json({
@@ -144,6 +144,58 @@ exports.getDriverDetailsById = async (req, res) => {
 };
 
 
+// driver all order list
+exports.getDriverAllOrdersList = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const { driverId } = req.params;
+        const user = req.user;
+        // console.log(user);
+        // console.log(driverId);
+
+        const driver = await driverModel.findOne({ _id: driverId, collectionCenterId: user._id })
+        if (!driver) {
+            return res.status(404).json({
+                status: false,
+                message: "Driver not found!",
+            })
+        };
+
+        const order = await orderModel.find(
+            { driverId: driverId, isAvailable: true }
+        )
+            .populate('productId')
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .exec();
+
+        if (!order) {
+            return res.status(404).json({
+                status: false,
+                message: "Order not found!",
+            })
+        };
+
+        const totalDocuments = await orderModel.countDocuments({ driverId: req.user._id, isAvailable: true });
+
+        return res.status(200).json({
+            status: true,
+            message: 'successfully fetched',
+            totalDocuments: totalDocuments,
+            data: order
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
+    }
+};
+
+
+
 // search driver
 exports.searchDriver = async (req, res) => {
     try {
@@ -157,7 +209,7 @@ exports.searchDriver = async (req, res) => {
                 { name: { $regex: data, $options: 'i' }, },
                 { mobile: { $regex: data, $options: 'i' }, },
             ],
-            userId: user._id
+            collectionCenterId: user._id
         })
             .sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).exec();
 
@@ -189,7 +241,7 @@ exports.updateDriverStatus = async (req, res) => {
         const { driverId } = req.params;
         const { status } = req.body;
 
-        const driver = await driverModel.findOne({ _id: driverId, userId: req.user._id });
+        const driver = await driverModel.findOne({ _id: driverId, collectionCenterId: req.user._id });
         if (!driver) {
             return res.status(404).json({
                 status: false,
@@ -240,7 +292,7 @@ exports.updateDriverData = async (req, res) => {
                 const aadhaarCardBack = req.files.aadhaarCardBack ? `/uploads/driverImages/${moment().unix()}-${req.files.aadhaarCardBack[0].originalname}` : null;
                 const licenseImage = req.files.licenseImage ? `/uploads/driverImages/${moment().unix()}-${req.files.licenseImage[0].originalname}` : null;
 
-                const driver = await driverModel.findOne({ _id: driverId, userId: req.user._id });
+                const driver = await driverModel.findOne({ _id: driverId, collectionCenterId: req.user._id });
                 if (!driver) {
                     deleteUploadedFiles(req.files);
                     return res.status(404).json({
@@ -313,7 +365,7 @@ exports.removeDriver = async (req, res) => {
         const { driverId } = req.params;
         const user = req.user;
 
-        const driver = await driverModel.findOne({ _id: driverId, userId: user._id });
+        const driver = await driverModel.findOne({ _id: driverId, collectionCenterId: user._id });
         if (!driver) {
             return res.status(404).json({
                 status: false,
@@ -354,7 +406,7 @@ exports.trackDriverLocation = async (req, res) => {
     try {
         const { driverId } = req.params;
 
-        const driver = await driverModel.findOne({ _id: driverId, userId: user._id, });
+        const driver = await driverModel.findOne({ _id: driverId, collectionCenterId: user._id, });
         if (!driver) {
             return res.status(404).json({
                 status: false,
@@ -402,15 +454,15 @@ exports.driverAllOrderList = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
-
+        // console.log(req.user);
         const order = await orderModel.find(
             { driverId: req.user._id, isAvailable: true }
         )
-            .populate({
-                path: 'productId',
-                select: '_id productName description images originalPrice offerPrice',
-            })
-            // .exec();
+            // .populate({
+            //     path: 'productId',
+            //     select: '_id productName description images originalPrice offerPrice',
+            // })
+            .populate('productId')
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
@@ -419,14 +471,14 @@ exports.driverAllOrderList = async (req, res) => {
         if (!order) {
             return res.status(404).json({
                 status: false,
-                message: "not found!",
+                message: "order not found!",
             })
         };
         const totalDocuments = await orderModel.countDocuments({ driverId: req.user._id, isAvailable: true });
 
         return res.status(200).json({
             status: true,
-            message: 'successfully fetched',
+            message: 'successfully fetched driver all orders',
             totalDocuments: totalDocuments,
             data: order
         });
