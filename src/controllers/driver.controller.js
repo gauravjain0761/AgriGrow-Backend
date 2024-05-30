@@ -178,12 +178,32 @@ exports.getDriverAllOrdersList = async (req, res) => {
             })
         };
 
+
+        const getDate = order.map(data => {
+            const date = new Date(data.time * 1000);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+
+            const formattedDate = `${day < 10 ? '0' : ''}${day}-${month < 10 ? '0' : ''}${month}-${year}`;
+            const formattedTime = moment(date).format('hh:mm A');
+
+            return {
+                ...data.toObject(),
+                formattedDate: formattedDate,
+                formattedTime: formattedTime,        //time is match with orderModel time field so here time show in orderModel time field value
+            };
+        });
+
+
+
         const totalDocuments = await orderModel.countDocuments({ driverId: driverId, isAvailable: true });
 
         return res.status(200).json({
             status: true,
             message: 'successfully fetched',
             totalDocuments: totalDocuments,
+            data1: getDate,
             data: order
         });
     } catch (error) {
@@ -405,6 +425,7 @@ exports.removeDriver = async (req, res) => {
 exports.trackDriverLocation = async (req, res) => {
     try {
         const { driverId } = req.params;
+        const user = req.user;
 
         const driver = await driverModel.findOne({ _id: driverId, collectionCenterId: user._id, });
         if (!driver) {
@@ -423,8 +444,6 @@ exports.trackDriverLocation = async (req, res) => {
         return res.status(200).send({
             status: true,
             message: "driver location fetched successfully",
-            lat: driver.lat,
-            long: driver.long,
             driverData: driver
         });
     } catch (error) {
@@ -474,6 +493,7 @@ exports.driverAllOrderList = async (req, res) => {
                 message: "order not found!",
             })
         };
+
         const totalDocuments = await orderModel.countDocuments({ driverId: req.user._id, isAvailable: true });
 
         return res.status(200).json({

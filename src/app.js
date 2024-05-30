@@ -100,3 +100,12 @@ app.listen(Port, () => {
 // failed
 // verification code ----> isVerified
 // farmer order list
+
+
+
+
+// 30/05
+// Banner
+// In cart user have only one farmer products
+// if user want to buy product from another farmer then they have to remove all product from cart
+// buy product API

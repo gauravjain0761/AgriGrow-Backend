@@ -148,14 +148,15 @@ const addProduct = async (req, res) => {
                 };
 
                 const { images, addOnImages } = req.files;
-                if (!images) {
-                    return res.status(400).send({
-                        status: false,
-                        message: 'image is required'
-                    });
-                };
+                // if (!images || images.length === 0) {
+                //     return res.status(400).send({
+                //         status: false,
+                //         message: 'image is required'
+                //     });
+                // };
 
-                const imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
+                // const imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
+                const imageFilePaths = images ? images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`) : [];
 
                 const { productName, description, originalPrice, offerPrice, quantity, weight, name, price } = req.body;
 
@@ -190,7 +191,8 @@ const addProduct = async (req, res) => {
                     });
 
                     if (name) {
-                        const addOnImageFilePaths = addOnImages.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
+                        // const addOnImageFilePaths = addOnImages.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
+                        const addOnImageFilePaths = addOnImages ? addOnImages.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`) : [];
                         const addOnNamesArray = name.split(',').map(name => name.trim());
                         const addOnPricesArray = req.body.price.split(',').map(price => parseFloat(price.trim()));
 

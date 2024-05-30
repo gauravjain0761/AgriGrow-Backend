@@ -45,6 +45,17 @@ const addProductToCart = async (req, res) => {
         const existingCartData = await cartModel.findOne({ userId: user._id });
 
         if (existingCartData) {
+
+            const existingFarmerIds = existingCartData.productDetails.map(detail => detail.farmerId.toString());
+            const currentFarmerId = product.farmerId.toString();
+
+            if (existingFarmerIds.length > 0 && existingFarmerIds[0] !== currentFarmerId) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'You can only add products from one farmer at a time to your cart'
+                });
+            }
+
             existingCartData.productDetails.push({
                 productId: productId,
                 farmerId: product.farmerId,
@@ -94,19 +105,15 @@ const addProductToCart = async (req, res) => {
 // getAllCartProducts
 const getAllCartProducts = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
         const productList = await cartModel.find({
             userId: req.user._id,
             // 'productDetails.status': 'AddedToCart'
         })
             .populate('productDetails.productId')
             .exec();
-
-        const getProductDetails = productList.flatMap(cart =>
-            cart.productDetails.filter(product => product.status === 'AddedToCart')
-        );
-        console.log(getProductDetails);
-        console.log(getProductDetails.length);
-
 
         if (!productList || productList.length === 0) {
             return res.status(404).json({
@@ -115,11 +122,18 @@ const getAllCartProducts = async (req, res) => {
             });
         };
 
+        const getProductDetails = productList.flatMap(cart =>
+            cart.productDetails.filter(product => product.status === 'AddedToCart')
+        );
+
+        const totalDocuments = getProductDetails.length;
+        const paginatedProductDetails = getProductDetails.slice((page - 1) * limit, page * limit);
+
         return res.status(200).json({
             status: true,
             message: 'all added products to the cart fetched successfully',
-            // data: productList,
-            data: getProductDetails
+            totalDocuments: totalDocuments,
+            data: paginatedProductDetails
         })
     } catch (error) {
         return res.status(500).json({
@@ -134,6 +148,9 @@ const getAllCartProducts = async (req, res) => {
 // getAllPlacedOrdersList
 const getAllPlacedOrdersList = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
         const productList = await cartModel.find({ userId: req.user._id })
             .populate('productDetails.productId')
             .exec();
@@ -164,6 +181,37 @@ const getAllPlacedOrdersList = async (req, res) => {
             message: 'all placed order product in the cart fetched successfully',
             data: getDate
         })
+
+        
+
+        // const totalDocuments = orderList.length;
+        // const paginatedOrderList = orderList.slice((page - 1) * limit, page * limit);
+
+        // const getDate = paginatedOrderList.map(data => {
+        //     const date = new Date(data.time * 1000);
+        //     const year = date.getFullYear();
+        //     const month = date.getMonth() + 1;
+        //     const day = date.getDate();
+
+        //     const formattedDate = `${day < 10 ? '0' : ''}${day}-${month < 10 ? '0' : ''}${month}-${year}`;
+        //     const formattedTime = moment(date).format('hh:mm A');
+
+        //     return {
+        //         ...data.toObject(),
+        //         addProductToCartDate: formattedDate,
+        //         addProductToCartTime: formattedTime,
+        //     };
+        // });
+
+        // return res.status(200).json({
+        //     status: true,
+        //     message: 'All placed order products in the cart fetched successfully',
+        //     totalDocuments: totalDocuments,
+        //     data: getDate
+        // });
+
+
+
     } catch (error) {
         return res.status(500).json({
             status: false,
