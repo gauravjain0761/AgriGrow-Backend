@@ -178,7 +178,7 @@ exports.getDriverAllOrdersList = async (req, res) => {
             })
         };
 
-        const totalDocuments = await orderModel.countDocuments({ driverId: req.user._id, isAvailable: true });
+        const totalDocuments = await orderModel.countDocuments({ driverId: driverId, isAvailable: true });
 
         return res.status(200).json({
             status: true,

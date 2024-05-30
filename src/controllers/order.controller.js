@@ -171,6 +171,7 @@ exports.assignJobToDriver = async (req, res) => {
         const updatedOrders = await Promise.all(foundOrders.map(async (order) => {
             order.driverId = driverId;
             order.assignToDriver = true;
+            order.time = moment().unix();
             // return order.save();
             await order.save();
             return order;

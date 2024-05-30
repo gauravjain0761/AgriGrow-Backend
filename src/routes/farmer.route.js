@@ -11,6 +11,8 @@ const { farmerRoleMiddleware } = require( '../../config/userRoleMiddleware' );
 
 router.post( '/sign-up',/*  farmerMiddleware.farmerSignUp, */ controller.farmerSignUp );
 
+router.patch('/updateMobileNumber', controller.updateMobileNumber);
+
 router.post( '/login', farmerMiddleware.farmerLogin, controller.farmerLogin );
 
 router.post( '/send-reset-password-otp', controller.sendResetPasswordOtp );

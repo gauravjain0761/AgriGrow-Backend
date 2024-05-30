@@ -310,7 +310,7 @@ const sendResetPasswordOtp = async (req, res) => {
 
         return res.status(200).send({
             status: true,
-            message: `Your OTP for Password Reset is send to ${user.email} successfully`,
+            message: `Your OTP for Password Reset is sent to ${user.email} successfully`,
             data: user
         });
     } catch (error) {
@@ -395,13 +395,11 @@ const resetPassword = async (req, res) => {
         }
         const newEncryptPassword = crypto.AES.encrypt(newPassword, process.env.secretKey).toString();
         user.password = newEncryptPassword;
-        user.otp = null;
-        user.otpValidTill = null;
         const newResetPassword = await user.save();
         return res.status(200).send({
             status: true,
-            message: "Reset password successfully",
-            newPassword: newResetPassword,
+            message: "Password reset successfully",
+            data: newResetPassword,
         });
     } catch (error) {
         console.log(error);

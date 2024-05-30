@@ -44,9 +44,6 @@ const moment = require('moment');
 // ] );
 
 
-
-
-
 // signup
 const farmerSignUp = async (req, res) => {
     try {
@@ -99,6 +96,12 @@ const farmerSignUp = async (req, res) => {
 
                 // farmer.certificates = certificates;
 
+                const getOtp = generateRandomNumber(4);
+                farmer.otp = getOtp;
+                const otpValidTill = new Date();
+                otpValidTill.setMinutes(otpValidTill.getMinutes() + 10);
+                farmer.otpValidTill = otpValidTill;
+
                 await farmer.save();
                 return res.status(201).send({
                     status: true,
@@ -132,7 +135,50 @@ const farmerSignUp = async (req, res) => {
 };
 
 
+// update mobile number
+const updateMobileNumber = async (req, res) => {
+    try {
+        const { email, mobile } = req.body;
 
+        const farmer = await farmerModel.findOne({ email: email });
+        if (!farmer) {
+            return res.status(404).send({
+                status: false,
+                message: "farmer Not Found!",
+            });
+        };
+
+        // Check if the new mobile number already exists in the database
+        if (mobile) {
+            const existingfarmer = await farmerModel.findOne({ mobile: mobile });
+            if (existingfarmer && existingfarmer._id.toString() !== farmer._id.toString()) {
+                return res.status(409).send({
+                    status: false,
+                    message: "Mobile number already exists!",
+                });
+            }
+            farmer.mobile = mobile;
+            const getOtp = generateRandomNumber(4);
+            farmer.otp = getOtp;
+            const otpValidTill = new Date();
+            otpValidTill.setMinutes(otpValidTill.getMinutes() + 10);
+            farmer.otpValidTill = otpValidTill;
+        };
+
+        await farmer.save();
+        return res.status(200).send({
+            status: true,
+            message: `mobile number updated successfully`,
+            data: farmer
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send({
+            status: false,
+            message: error.message,
+        });
+    }
+};
 
 
 // login
@@ -165,6 +211,7 @@ const farmerLogin = async (req, res) => {
             return res.status(400).send({
                 status: false,
                 message: `${farmer.email}, before login please verify your account.`,
+                data: farmer
             });
         };
 
@@ -229,7 +276,8 @@ const sendResetPasswordOtp = async (req, res) => {
 
         return res.status(200).send({
             status: true,
-            message: `Your OTP for Password Reset is send to ${farmer.email} successfully`,
+            message: `Your OTP for Password Reset is sent to ${farmer.email} successfully`,
+            data: farmer
         });
     } catch (error) {
         console.log(error);
@@ -313,13 +361,11 @@ const resetPassword = async (req, res) => {
         }
         const newEncryptPassword = crypto.AES.encrypt(newPassword, process.env.secretKey).toString();
         farmer.password = newEncryptPassword;
-        farmer.otp = null;
-        farmer.otpValidTill = null;
         const newResetPassword = await farmer.save();
         return res.status(200).send({
             status: true,
-            message: "Reset password successfully",
-            newPassword: newResetPassword,
+            message: "Password reset successfully",
+            data: newResetPassword,
         });
     } catch (error) {
         console.log(error);
@@ -709,6 +755,7 @@ const farmerLogOut = async (req, res) => {
 
 module.exports = {
     farmerSignUp,
+    updateMobileNumber,
     farmerLogin,
     sendResetPasswordOtp,
     verifyResetPasswordOTP,
