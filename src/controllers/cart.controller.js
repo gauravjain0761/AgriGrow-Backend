@@ -393,15 +393,7 @@ const buyProduct = async (req, res) => {
             });
         };
         console.log('cartData---->', cartData);
-        // console.log('cartData---->', cartData.status);
-
-        // if (cartData.status != 'AddedToCart') {
-        //     return res.status(400).json({
-        //         status: false,
-        //         message: `cart status is ${cartData.status}`
-        //     });
-        // };
-
+      
         const productsToBuy = cartData.productDetails.filter(productDetail =>
             productIds.includes(productDetail.productId.toString())
         );
@@ -419,6 +411,7 @@ const buyProduct = async (req, res) => {
             const product = await productModel.findOne({ _id: productDetail.productId });
             console.log('product  ----->', product);
             console.log('productDetail  ----->', productDetail);
+            
             if (!product) {
                 return res.status(404).json({
                     status: false,
