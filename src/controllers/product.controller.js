@@ -269,75 +269,69 @@ const addProduct = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // updateProduct
 const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const product = await productModel.findOne({ _id: id });
+
+        const product = await productModel.findById(id);
         if (!product) {
             return res.status(404).json({
                 status: false,
-                message: 'product data not found!'
+                message: 'product not found!'
             })
         };
+
+        // if (product.farmerId.toString() !== req.user._id.toString()) {
+        if (!product.farmerId.equals(req.user._id)) {
+            return res.status(403).json({
+                status: false,
+                message: "Only the farmer who created the product has access to update it.",
+            });
+        };
+
         uploadProductImages(req, res, async (err) => {
             try {
                 if (err) {
+                    deleteUploadedFiles(req.files);
                     return res.status(500).send({
                         status: false,
                         message: 'Error during file upload: ' + err.message,
                     });
                 };
 
-                const { productName, description, originalPrice, offerPrice, discount, quantity, } = req.body;
-
-                if (product.images && product.images.length > 0) {
-                    product.images.forEach(oldImagePath => {
-                        const absolutePath = path.join(__dirname, '../../', oldImagePath);
-                        if (fs.existsSync(absolutePath)) {
-                            fs.unlinkSync(absolutePath);
-                        }
-                    });
-                };
+                const { productName, description, originalPrice, offerPrice, quantity, weight } = req.body;
 
                 const { images } = req.files;
-                // const imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
-                const imageFilePaths = images ? images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`) : [];
+                let imageFilePaths = product.images;
+
+                if (images && images.length > 0) {
+                    // Delete old images if new images are uploaded
+                    if (product.images && product.images.length > 0) {
+                        product.images.forEach(oldImagePath => {
+                            const absolutePath = path.join(__dirname, '../../', oldImagePath);
+                            if (fs.existsSync(absolutePath)) {
+                                fs.unlinkSync(absolutePath);
+                            }
+                        });
+                    }
+
+                    imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
+                };
 
                 product.productName = productName ? productName : product.productName;
                 product.description = description ? description : product.description;
                 product.originalPrice = originalPrice ? originalPrice : product.originalPrice;
                 product.offerPrice = offerPrice ? offerPrice : product.offerPrice;
-                product.discount = discount ? discount : product.discount;
                 product.quantity = quantity ? quantity : product.quantity;
+                product.weight = weight ? weight : product.weight;
+                product.time = moment().unix();
                 product.images = imageFilePaths ? imageFilePaths : product.images;
 
                 await product.save();
                 return res.status(200).json({
                     status: true,
-                    message: 'product successfully updated',
+                    message: 'product updated successfully',
                     data: product
                 });
             } catch (error) {
