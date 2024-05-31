@@ -40,6 +40,24 @@ exports.uploadProfileImage = multer({
 
 // -------------------------------------------------------------------------------------
 
+const bannerImageStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, '../uploads/bannerImages/'));
+    },
+    filename: function (req, file, cb) {
+        cb(null, moment().unix() + "-" + file.originalname);
+    },
+});
+
+exports.uploadBannerImage = multer({
+    storage: bannerImageStorage,
+    limits: {
+        fileSize: 5 * 1024 * 1024,
+    },
+}).single("bannerImage");
+
+// -------------------------------------------------------------------------------------
+
 const certificateStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, path.join(__dirname, '../uploads/farmerCertificates/'));

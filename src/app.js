@@ -30,6 +30,7 @@ const collectionCenterRoutes = require('./routes/collectionCenter.route');
 const vehicleRoutes = require('./routes/vehicle.route');
 const driverRoutes = require('./routes/driver.route');
 const orderRoutes = require('./routes/order.route');
+const bannerRoutes = require('./routes/banner.route');
 
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/farmer', farmerRoutes);
@@ -44,6 +45,7 @@ app.use('/api/v1/collectionCenter', collectionCenterRoutes);
 app.use('/api/v1/vehicle', vehicleRoutes);
 app.use('/api/v1/driver', driverRoutes);
 app.use('/api/v1/order', orderRoutes);
+app.use('/api/v1/banner', bannerRoutes);
 
 
 app.use('/uploads', express.static('uploads'));
