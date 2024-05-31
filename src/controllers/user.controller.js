@@ -156,6 +156,14 @@ const userLogin = async (req, res) => {
         };
 
         if (user.role === constants.ROLE.USER && user.isVerified === false) {
+            const getOtp = generateRandomNumber(4);
+            user.otp = getOtp;
+            const otpValidTill = new Date();
+            otpValidTill.setMinutes(otpValidTill.getMinutes() + 10);
+            user.otpValidTill = otpValidTill;
+
+            await user.save();
+
             return res.status(400).send({
                 status: false,
                 message: `${user.email}, before login please verify your account.`,

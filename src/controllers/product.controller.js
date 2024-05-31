@@ -322,8 +322,9 @@ const updateProduct = async (req, res) => {
                     });
                 };
 
-                const images = req.files;
-                const imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
+                const { images } = req.files;
+                // const imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
+                const imageFilePaths = images ? images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`) : [];
 
                 product.productName = productName ? productName : product.productName;
                 product.description = description ? description : product.description;

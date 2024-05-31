@@ -208,6 +208,14 @@ const farmerLogin = async (req, res) => {
         };
 
         if (farmer.isVerified === false) {
+            const getOtp = generateRandomNumber(4);
+            farmer.otp = getOtp;
+            const otpValidTill = new Date();
+            otpValidTill.setMinutes(otpValidTill.getMinutes() + 10);
+            farmer.otpValidTill = otpValidTill;
+            
+            await farmer.save();
+
             return res.status(400).send({
                 status: false,
                 message: `${farmer.email}, before login please verify your account.`,
