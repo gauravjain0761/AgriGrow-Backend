@@ -71,7 +71,7 @@ exports.addBanner = async (req, res) => {
 
 
 
-exports.allBannerList = async (req, res) => {
+exports.getAllBanners = async (req, res) => {
     try {
         const banner = await bannerModel.find();
 

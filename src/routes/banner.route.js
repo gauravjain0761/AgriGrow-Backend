@@ -8,7 +8,7 @@ const controller = require('../controllers/banner.controller');
 
 router.post('/addBanner', controller.addBanner);
 
-router.get('/allBannerList', controller.allBannerList);
+router.get('/getAllBanners', controller.getAllBanners);
 
 
 

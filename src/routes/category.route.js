@@ -11,7 +11,7 @@ const { userRoleMiddleware } = require('../../config/userRoleMiddleware');
 
 router.post('/add-category', /* categoryMiddleware.addCategory, */ controller.addCategory);
 
-router.get('/get-all-category', passportAuthentication, userRoleMiddleware, controller.getAllCategory);
+router.get('/get-all-category', passportAuthentication, controller.getAllCategory);
 
 
 module.exports = router;
