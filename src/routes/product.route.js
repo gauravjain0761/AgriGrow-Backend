@@ -11,7 +11,7 @@ router.post('/add-product/:id', /* productMiddleware.addProduct, */ passportAuth
 
 // router.post( '/product-addOns/:productId', passportAuthentication, farmerRoleMiddleware, controller.productAddOns );
 
-router.post('/update-product/:id', passportAuthentication, farmerRoleMiddleware, controller.updateProduct);
+router.patch('/update-product/:id', passportAuthentication, farmerRoleMiddleware, controller.updateProduct);
 
 router.get('/get-all-products', passportAuthentication, farmerRoleMiddleware, controller.getAllProducts);
 
