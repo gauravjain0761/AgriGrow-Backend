@@ -38,6 +38,8 @@ router.get('/getAllAddressList', passportAuthentication, userRoleMiddleware, con
 
 router.patch('/editAddress/:deliveryAddressId', passportAuthentication, userRoleMiddleware, controller.editAddress);
 
+router.patch('/setAsPrimaryAddress/:deliveryAddressId', passportAuthentication, userRoleMiddleware, controller.setAsPrimaryAddress);
+
 router.delete('/deleteAddress/:deliveryAddressId', passportAuthentication, userRoleMiddleware, controller.deleteAddress);
 
 router.post('/logOut', passportAuthentication, controller.userLogout);

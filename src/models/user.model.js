@@ -60,6 +60,18 @@ const userModel = new mongoose.Schema(
                     type: String,
                     default: null,
                 },
+                lat: {
+                    type: String,
+                    default: null,
+                },
+                long: {
+                    type: String,
+                    default: null,
+                },
+                isPrimaryAddress: {
+                    type: Boolean,
+                    default: false,
+                },
             }],
             default: []
         },

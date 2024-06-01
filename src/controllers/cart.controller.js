@@ -144,23 +144,31 @@ const getAllCartProducts = async (req, res) => {
 };
 
 
-
-// getAllPlacedOrdersList
+// get all palced orders list
 const getAllPlacedOrdersList = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
 
+        // Get all placed orders for the user
         const productList = await cartModel.find({ userId: req.user._id })
             .populate('productDetails.productId')
             .exec();
 
+        // Flatten the product details and filter by 'PlacedOrder' status
         const orderList = productList.flatMap(cart =>
             cart.productDetails.filter(detail => detail.status === 'PlacedOrder')
         );
-        // console.log('orderList---->', orderList);
 
-        const getDate = orderList.map(data => {
+        // Calculate total documents
+        const totalDocuments = orderList.length;
+
+        // Paginate the order list
+        const paginatedOrderList = orderList.slice(skip, skip + limit);
+
+        // Format date and time
+        const getDate = paginatedOrderList.map(data => {
             const date = new Date(data.time * 1000);
             const year = date.getFullYear();
             const month = date.getMonth() + 1;
@@ -178,47 +186,100 @@ const getAllPlacedOrdersList = async (req, res) => {
 
         return res.status(200).json({
             status: true,
-            message: 'all placed order product in the cart fetched successfully',
-            data: getDate
-        })
-
-        
-
-        // const totalDocuments = orderList.length;
-        // const paginatedOrderList = orderList.slice((page - 1) * limit, page * limit);
-
-        // const getDate = paginatedOrderList.map(data => {
-        //     const date = new Date(data.time * 1000);
-        //     const year = date.getFullYear();
-        //     const month = date.getMonth() + 1;
-        //     const day = date.getDate();
-
-        //     const formattedDate = `${day < 10 ? '0' : ''}${day}-${month < 10 ? '0' : ''}${month}-${year}`;
-        //     const formattedTime = moment(date).format('hh:mm A');
-
-        //     return {
-        //         ...data.toObject(),
-        //         addProductToCartDate: formattedDate,
-        //         addProductToCartTime: formattedTime,
-        //     };
-        // });
-
-        // return res.status(200).json({
-        //     status: true,
-        //     message: 'All placed order products in the cart fetched successfully',
-        //     totalDocuments: totalDocuments,
-        //     data: getDate
-        // });
-
-
+            message: 'All placed order products in the cart fetched successfully',
+            totalDocuments: totalDocuments,
+            data: getDate,
+            // currentPage: page,
+            // totalPages: Math.ceil(totalDocuments / limit)
+        });
 
     } catch (error) {
         return res.status(500).json({
             status: false,
             message: error.message
-        })
+        });
     }
 };
+
+
+
+
+
+
+// // getAllPlacedOrdersList
+// const getAllPlacedOrdersList = async (req, res) => {
+//     try {
+//         const page = parseInt(req.query.page) || 1;
+//         const limit = parseInt(req.query.limit) || 10;
+
+//         const productList = await cartModel.find({ userId: req.user._id })
+//             .populate('productDetails.productId')
+//             .exec();
+
+//         const orderList = productList.flatMap(cart =>
+//             cart.productDetails.filter(detail => detail.status === 'PlacedOrder')
+//         );
+//         // console.log('orderList---->', orderList);
+
+//         const getDate = orderList.map(data => {
+//             const date = new Date(data.time * 1000);
+//             const year = date.getFullYear();
+//             const month = date.getMonth() + 1;
+//             const day = date.getDate();
+
+//             const formattedDate = `${day < 10 ? '0' : ''}${day}-${month < 10 ? '0' : ''}${month}-${year}`;
+//             const formattedTime = moment(date).format('hh:mm A');
+
+//             return {
+//                 ...data.toObject(),
+//                 addProductToCartDate: formattedDate,
+//                 addProductToCartTime: formattedTime,
+//             };
+//         });
+
+//         return res.status(200).json({
+//             status: true,
+//             message: 'all placed order product in the cart fetched successfully',
+//             data: getDate
+//         })
+
+
+
+//         // const totalDocuments = orderList.length;
+//         // const paginatedOrderList = orderList.slice((page - 1) * limit, page * limit);
+
+//         // const getDate = paginatedOrderList.map(data => {
+//         //     const date = new Date(data.time * 1000);
+//         //     const year = date.getFullYear();
+//         //     const month = date.getMonth() + 1;
+//         //     const day = date.getDate();
+
+//         //     const formattedDate = `${day < 10 ? '0' : ''}${day}-${month < 10 ? '0' : ''}${month}-${year}`;
+//         //     const formattedTime = moment(date).format('hh:mm A');
+
+//         //     return {
+//         //         ...data.toObject(),
+//         //         addProductToCartDate: formattedDate,
+//         //         addProductToCartTime: formattedTime,
+//         //     };
+//         // });
+
+//         // return res.status(200).json({
+//         //     status: true,
+//         //     message: 'All placed order products in the cart fetched successfully',
+//         //     totalDocuments: totalDocuments,
+//         //     data: getDate
+//         // });
+
+
+
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message
+//         })
+//     }
+// };
 
 
 // updateCartProduct
@@ -393,7 +454,7 @@ const buyProduct = async (req, res) => {
             });
         };
         console.log('cartData---->', cartData);
-      
+
         const productsToBuy = cartData.productDetails.filter(productDetail =>
             productIds.includes(productDetail.productId.toString())
         );
@@ -411,7 +472,7 @@ const buyProduct = async (req, res) => {
             const product = await productModel.findOne({ _id: productDetail.productId });
             console.log('product  ----->', product);
             console.log('productDetail  ----->', productDetail);
-            
+
             if (!product) {
                 return res.status(404).json({
                     status: false,

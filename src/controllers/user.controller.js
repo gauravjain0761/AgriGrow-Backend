@@ -663,13 +663,15 @@ const updateProfile = async (req, res) => {
 const addNewAddress = async (req, res) => {
     try {
         const user = req.user;
-        const { state, city, postalCode, streetAddress } = req.body;
+        const { state, city, postalCode, streetAddress, lat, long } = req.body;
 
         user.deliveryAddress.push({
             state: state,
             city: city,
             postalCode: postalCode,
-            streetAddress: streetAddress
+            streetAddress: streetAddress,
+            lat: lat,
+            long: long
         });
 
         await user.save();
@@ -692,14 +694,13 @@ const addNewAddress = async (req, res) => {
 const getAllAddressList = async (req, res) => {
     try {
         const user = req.user;
-        const deliveryAddress = user.deliveryAddress.map(data => data);
-        console.log(22222222, deliveryAddress);
 
+        // const deliveryAddress = user.deliveryAddress.map(data => data);
         return res.status(200).json({
             status: true,
             message: "fetched successfully",
-            userData: user,
-            deliveryAddress: deliveryAddress
+            data: user.deliveryAddress,
+            // deliveryAddress: deliveryAddress
         });
     } catch (error) {
         return res.status(500).json({
@@ -715,10 +716,10 @@ const editAddress = async (req, res) => {
     try {
         const user = req.user;
         const { deliveryAddressId } = req.params;
-        const { state, city, postalCode, streetAddress } = req.body;
+        const { state, city, postalCode, streetAddress, lat, long } = req.body;
 
         const address = user.deliveryAddress.id(deliveryAddressId);
-        console.log(address);
+        // console.log(address);
 
         if (!address) {
             return res.status(404).json({
@@ -731,12 +732,54 @@ const editAddress = async (req, res) => {
         if (city) address.city = city;
         if (postalCode) address.postalCode = postalCode;
         if (streetAddress) address.streetAddress = streetAddress;
+        if (lat) address.lat = lat;
+        if (long) address.long = long;
 
         await user.save();
 
         return res.status(200).json({
             status: true,
             message: "updated successfully",
+            data: user
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message
+        })
+    }
+};
+
+
+// edit address
+const setAsPrimaryAddress = async (req, res) => {
+    try {
+        const user = req.user;
+        const { deliveryAddressId } = req.params;
+
+        const address = user.deliveryAddress.id(deliveryAddressId);
+        // console.log(address);
+
+        if (!address) {
+            return res.status(404).json({
+                status: false,
+                message: "Address not found"
+            });
+        };
+
+        // Unset the primary status of any existing primary address
+        user.deliveryAddress.forEach(add => {
+            if (add.isPrimaryAddress) {
+                add.isPrimaryAddress = false;
+            }
+        });
+
+        address.isPrimaryAddress = true;
+        await user.save();
+
+        return res.status(200).json({
+            status: true,
+            message: "set as a primary address successfully",
             data: user
         });
     } catch (error) {
@@ -819,6 +862,7 @@ module.exports = {
     addNewAddress,
     getAllAddressList,
     editAddress,
+    setAsPrimaryAddress,
     deleteAddress,
     userLogout
 };

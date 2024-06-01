@@ -19,24 +19,6 @@ exports.farmerAllOrderList = async (req, res) => {
             .limit(limit)
             .exec();
 
-            
-        // .populate({
-        //     path: 'productId',
-        //     select: '_id productName description images originalPrice offerPrice',
-        // })
-        // // .exec();
-        // .sort({ createdAt: -1 })
-        // .skip((page - 1) * limit)
-        // .limit(limit)
-        // .exec();
-
-        // const productList = await cartModel.find({
-        //     userId: req.user._id,
-        //     // 'productDetails.status': 'AddedToCart'
-        // })
-        //     .populate('productDetails.productId')
-        //     .exec();
-
 
         if (!farmerOrder) {
             return res.status(404).json({
@@ -50,8 +32,8 @@ exports.farmerAllOrderList = async (req, res) => {
         return res.status(200).json({
             status: true,
             message: 'successfully fetched',
-            totalDocuments: totalDocuments,
-            data: farmerOrder
+            // totalDocuments: totalDocuments,
+            // data: farmerOrder
         });
     } catch (error) {
         return res.status(500).json({
