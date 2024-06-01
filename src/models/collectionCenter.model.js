@@ -42,6 +42,14 @@ const collectionCenterModel = new mongoose.Schema(
             type: String,
             default: null,
         },
+        lat: {
+            type: String,
+            default: null,
+        },
+        long: {
+            type: String,
+            default: null,
+        },
         operationTime: {
             type: [{
                 day: {

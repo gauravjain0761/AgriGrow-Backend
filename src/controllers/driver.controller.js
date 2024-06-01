@@ -582,9 +582,15 @@ exports.failedOrder = async (req, res) => {
 exports.deliverOrder = async (req, res) => {
     try {
         const { orderId } = req.params;
+        const { scannedQRCode } = req.body; // QR code data from the customer
         const user = req.user;
 
-        const order = await orderModel.findOne({ _id: orderId, driverId: user._id, status: "IN_PROGRESS", isAvailable: true });
+        const order = await orderModel.findOne({
+            _id: orderId,
+            driverId: user._id,
+            status: "IN_PROGRESS",
+            isAvailable: true
+        });
 
         if (!order) {
             return res.status(404).json({
@@ -592,8 +598,14 @@ exports.deliverOrder = async (req, res) => {
                 message: "not found!",
             })
         };
-        // first driver scan the qr code of customer mobile
-        // here if product qr code matched with customer qr code then successfull
+
+        // Validate the scanned QR code against the order's productId
+        if (scannedQRCode !== order.productId.toString()) {
+            return res.status(400).json({
+                status: false,
+                message: "Invalid QR code!"
+            });
+        };
 
         order.status = constants.ORDER_STATUS.SUCCESS;
         order.receiverName = 'Self';
@@ -601,6 +613,13 @@ exports.deliverOrder = async (req, res) => {
         order.time = moment().unix();
         // also update the product model
         await order.save();
+
+        // Also update the product model (if needed)
+        // const product = await productModel.findById(order.productId);
+        // if (product) {
+        //     product.status = constants.PRODUCT_STATUS.DELIVERED;
+        //     await product.save();
+        // }
 
         return res.status(200).json({
             status: true,

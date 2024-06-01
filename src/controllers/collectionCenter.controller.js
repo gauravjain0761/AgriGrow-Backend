@@ -35,7 +35,7 @@ exports.registerToCollectionCenter = async (req, res) => {
                 };
 
                 const { collectionCenterName, password, govermentId, licenseNumber, aadhaarCardNumber,
-                    collectionCenterAddress, day, open, close, deviceToken } = req.body;
+                    collectionCenterAddress, day, open, close, lat, long, deviceToken } = req.body;
 
                 const aadhaarCardFront = req.files.aadhaarCardFront ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.aadhaarCardFront[0].originalname}` : null;
                 const aadhaarCardBack = req.files.aadhaarCardBack ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.aadhaarCardBack[0].originalname}` : null;
@@ -55,6 +55,8 @@ exports.registerToCollectionCenter = async (req, res) => {
                     licenseNumber: licenseNumber,
                     aadhaarCardNumber: aadhaarCardNumber,
                     collectionCenterAddress: collectionCenterAddress,
+                    lat: lat,
+                    long: long,
                     aadhaarCardFront: aadhaarCardFront,
                     aadhaarCardBack: aadhaarCardBack,
                     licenseImage: licenseImage,
@@ -169,6 +171,40 @@ exports.getCollectionCenterData = async (req, res) => {
     }
 };
 
+
+// get all collection center list   
+exports.getAllCollectionCenterList = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const collectionCenter = await collectionCenterModel.find()
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .exec();
+
+        if (!collectionCenter) {
+            return res.status(404).json({
+                status: false,
+                message: "not found!",
+            })
+        };
+        const totalDocuments = await collectionCenterModel.countDocuments();
+
+        return res.status(200).json({
+            status: true,
+            message: 'successfully fetched',
+            totalDocuments: totalDocuments,
+            data: collectionCenter
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
+    }
+};
 
 
 // Helper function to delete an old image

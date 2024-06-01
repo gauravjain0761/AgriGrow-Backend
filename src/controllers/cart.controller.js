@@ -508,12 +508,14 @@ const buyProduct = async (req, res) => {
             await farmerOrder.save();
 
             // --------------------------------------------------------------------------------------
-            const qrCodeData = await QRCode.toDataURL(productIds.toString());
+            // Generate QR code for the specific product
+            const qrCodeData = await QRCode.toDataURL(productDetail.productId.toString());
 
+            // Update productDetail in cart
             productDetail.time = moment().unix();
             productDetail.status = 'PlacedOrder';
             productDetail.QRCode = qrCodeData;
-        }
+        };
 
         await cartData.save();
 
@@ -522,7 +524,6 @@ const buyProduct = async (req, res) => {
             message: 'products bought successfully',
             data: cartData
         });
-
     } catch (error) {
         return res.status(500).json({
             status: false,

@@ -111,3 +111,13 @@ app.listen(Port, () => {
 // In cart user have only one farmer products
 // if user want to buy product from another farmer then they have to remove all product from cart
 // buy product API
+
+
+
+// 01/06
+// cc lat, long   1
+// farmer check the nearest cc 
+// current lat, long
+// all cc list    2
+// nearest cc list
+// QR code 3
