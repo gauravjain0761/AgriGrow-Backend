@@ -21,7 +21,7 @@ router.delete('/delete-product/:productId', passportAuthentication, farmerRoleMi
 
 router.get('/getProductsListByCategory/:categoryId', passportAuthentication, controller.getProductsListByCategory);
 
-router.get('/getAllProductsList', passportAuthentication, driverRoleMiddleware, controller.getAllProductsList);
+router.get('/getAllProductsList', passportAuthentication, controller.getAllProductsList);
 
 router.get('/get-all-best-deal-products', passportAuthentication, controller.getAllBestDealProducts);
 
