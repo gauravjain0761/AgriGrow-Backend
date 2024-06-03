@@ -234,15 +234,24 @@ exports.updateCollectionCenterData = async (req, res) => {
 
                 const user = req.user;
 
-                const { collectionCenterName, email, mobile, govermentId, licenseNumber,
-                    aadhaarCardNumber, collectionCenterAddress, operationTime } = req.body;
+                const { collectionCenterName, govermentId, licenseNumber, aadhaarCardNumber,
+                    collectionCenterAddress, lat, long, day, open, close } = req.body;
 
+                const coverImage = req.files.coverImage ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.coverImage[0].originalname}` : null;
+                const profileImage = req.files.profileImage ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.profileImage[0].originalname}` : null;
                 const govermentIdImage = req.files.govermentIdImage ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.govermentIdImage[0].originalname}` : null;
                 const aadhaarCardFront = req.files.aadhaarCardFront ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.aadhaarCardFront[0].originalname}` : null;
                 const aadhaarCardBack = req.files.aadhaarCardBack ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.aadhaarCardBack[0].originalname}` : null;
                 const licenseImage = req.files.licenseImage ? `/uploads/collectionCenterImages/${moment().unix()}-${req.files.licenseImage[0].originalname}` : null;
 
                 // Delete old images if new ones are uploaded
+                // if (coverImage) deleteOldImage(user.coverImage);
+                if (coverImage) {
+                    deleteOldImage(user.coverImage);
+                };
+                if (profileImage) {
+                    deleteOldImage(user.profileImage);
+                };
                 if (govermentIdImage) {
                     deleteOldImage(user.govermentIdImage);
                 };
@@ -257,17 +266,42 @@ exports.updateCollectionCenterData = async (req, res) => {
                 };
 
                 user.collectionCenterName = collectionCenterName ? collectionCenterName : user.collectionCenterName;
-                user.email = email ? email : user.email;
-                user.mobile = mobile ? mobile : user.mobile;
                 user.govermentId = govermentId ? govermentId : user.govermentId;
                 user.licenseNumber = licenseNumber ? licenseNumber : user.licenseNumber;
                 user.aadhaarCardNumber = aadhaarCardNumber ? aadhaarCardNumber : user.aadhaarCardNumber;
                 user.collectionCenterAddress = collectionCenterAddress ? collectionCenterAddress : user.collectionCenterAddress;
-                user.operationTime = operationTime ? operationTime : user.operationTime;
+                user.lat = lat ? lat : user.lat;
+                user.long = long ? long : user.long;
+                // user.operationTime = operationTime ? operationTime : user.operationTime;
+
+                user.coverImage = coverImage ? coverImage : user.coverImage;
+                user.profileImage = profileImage ? profileImage : user.profileImage;
                 user.govermentIdImage = govermentIdImage ? govermentIdImage : user.govermentIdImage;
                 user.aadhaarCardFront = aadhaarCardFront ? aadhaarCardFront : user.aadhaarCardFront;
                 user.aadhaarCardBack = aadhaarCardBack ? aadhaarCardBack : user.aadhaarCardBack;
                 user.licenseImage = licenseImage ? licenseImage : user.licenseImage;
+
+
+                if (day) {
+                    const daysArray = day.split(',').map(e => (e.trim()));
+                    const openingTimeArray = open.split(',').map(e => (e.trim()));
+                    const closeingTimeArray = close.split(',').map(e => (e.trim()));
+
+                    if (daysArray.length !== openingTimeArray.length ||
+                        daysArray.length !== closeingTimeArray.length) {
+                        deleteUploadedFiles(req.files);
+                        return res.status(400).send({
+                            status: false,
+                            message: 'All array fields must have the same length',
+                        });
+                    };
+
+                    user.operationTime = daysArray.map((element, index) => ({
+                        day: element,
+                        open: openingTimeArray[index],
+                        close: closeingTimeArray[index],
+                    }));
+                };
 
                 await user.save();
 

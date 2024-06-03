@@ -528,10 +528,20 @@ const getProductDetails = async (req, res) => {
             })
         };
 
+        const user = req.user;
+
+        const checkFavoriteStatus = await favoriteProductModel.findOne({ productId: product._id, userId: user._id });
+
+        const favoriteStatus = ({
+            ...product.toObject(),
+            isFavorite: checkFavoriteStatus ? true : false
+        });
+
         return res.status(200).json({
             status: true,
             message: 'successfully fetched',
-            data: product
+            data: favoriteStatus
+            // data: product,
         });
     } catch (error) {
         return res.status(500).json({
@@ -564,10 +574,18 @@ const searchProduct = async (req, res) => {
             })
         };
 
+        // const user = req.user;
+        // const checkFavoriteStatus = await favoriteProductModel.findOne({ productId: product._id, userId: user._id });
+        // const favoriteStatus = ({
+        //     ...product.toObject(),
+        //     isFavorite: checkFavoriteStatus ? true : false
+        // });
+
         return res.status(200).json({
             status: true,
             message: 'searched successfully',
-            data: product
+            data: product,
+            // data: favoriteStatus
         });
     } catch (error) {
         return res.status(500).json({

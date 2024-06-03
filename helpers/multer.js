@@ -157,6 +157,8 @@ exports.uploadCollectionCenterImages = multer({
         fileSize: 5 * 1024 * 1024,
     },
 }).fields([
+    { name: 'coverImage', maxCount: 1 },
+    { name: 'profileImage', maxCount: 1 },
     { name: 'govermentIdImage', maxCount: 1 },
     { name: 'aadhaarCardFront', maxCount: 1 },
     { name: 'aadhaarCardBack', maxCount: 1 },

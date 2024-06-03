@@ -213,7 +213,7 @@ const farmerLogin = async (req, res) => {
             const otpValidTill = new Date();
             otpValidTill.setMinutes(otpValidTill.getMinutes() + 10);
             farmer.otpValidTill = otpValidTill;
-            
+
             await farmer.save();
 
             return res.status(400).send({

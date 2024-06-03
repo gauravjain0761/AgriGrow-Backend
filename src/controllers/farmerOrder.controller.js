@@ -19,7 +19,6 @@ exports.farmerAllOrderList = async (req, res) => {
             .limit(limit)
             .exec();
 
-
         if (!farmerOrder) {
             return res.status(404).json({
                 status: false,
@@ -32,8 +31,8 @@ exports.farmerAllOrderList = async (req, res) => {
         return res.status(200).json({
             status: true,
             message: 'successfully fetched',
-            // totalDocuments: totalDocuments,
-            // data: farmerOrder
+            totalDocuments: totalDocuments,
+            data: farmerOrder
         });
     } catch (error) {
         return res.status(500).json({

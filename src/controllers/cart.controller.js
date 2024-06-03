@@ -504,8 +504,8 @@ const buyProduct = async (req, res) => {
                 totalPrice: productDetail.totalPrice,
                 time: moment().unix()
             });
-            console.log('farmerOrder---->', farmerOrder);
             await farmerOrder.save();
+            console.log('farmerOrder---->', farmerOrder);
 
             // --------------------------------------------------------------------------------------
             // Generate QR code for the specific product

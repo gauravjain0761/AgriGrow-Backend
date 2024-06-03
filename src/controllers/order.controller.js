@@ -53,11 +53,12 @@ exports.allOrderList = async (req, res) => {
         const order = await orderModel.find(
             { userId: req.user._id, assignToDriver: false, isAvailable: true }
         )
-            .populate({
-                path: 'productId',
-                select: '_id productName description images originalPrice offerPrice',
-            })
+            // .populate({
+            //     path: 'productId',
+            //     select: '_id productName description images originalPrice offerPrice',
+            // })
             // .exec();
+            .populate('productId')
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
@@ -96,11 +97,12 @@ exports.statusNewOrderList = async (req, res) => {
         const order = await orderModel.find(
             { userId: req.user._id, status: constants.ORDER_STATUS.NEW, assignToDriver: false, isAvailable: true }
         )
-            .populate({
-                path: 'productId',
-                select: '_id productName description images originalPrice offerPrice',
-            })
+            // .populate({
+            //     path: 'productId',
+            //     select: '_id productName description images originalPrice offerPrice',
+            // })
             // .exec();
+            .populate('productId')
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)

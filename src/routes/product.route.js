@@ -5,7 +5,7 @@ require('./../../config/passport')(passport);
 const controller = require('../controllers/product.controller');
 // const productMiddleware = require( '../middlewares/product.middleware' );
 const passportAuthentication = passport.authenticate('jwt', { session: false });
-const { farmerRoleMiddleware, driverRoleMiddleware } = require('../../config/userRoleMiddleware');
+const { farmerRoleMiddleware, userRoleMiddleware, driverRoleMiddleware } = require('../../config/userRoleMiddleware');
 
 router.post('/add-product/:id', /* productMiddleware.addProduct, */ passportAuthentication, farmerRoleMiddleware, controller.addProduct);
 
@@ -19,17 +19,17 @@ router.delete('/delete-product/:productId', passportAuthentication, farmerRoleMi
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-router.get('/getProductsListByCategory/:categoryId', passportAuthentication, controller.getProductsListByCategory);
+router.get('/getProductsListByCategory/:categoryId', passportAuthentication, userRoleMiddleware, controller.getProductsListByCategory);
 
-router.get('/getAllProductsList', passportAuthentication, controller.getAllProductsList);
+router.get('/getAllProductsList', passportAuthentication, userRoleMiddleware, controller.getAllProductsList);
 
 // router.get('/get-all-best-deal-products', passportAuthentication, controller.getAllBestDealProducts);
 
-router.get('/get-product-details/:productId', passportAuthentication, controller.getProductDetails);
+router.get('/get-product-details/:productId', passportAuthentication, userRoleMiddleware, controller.getProductDetails);
 
-router.post('/search-product', passportAuthentication, controller.searchProduct);
+router.post('/search-product', passportAuthentication, userRoleMiddleware, controller.searchProduct);
 
-router.get('/product-all-details/:productId', passportAuthentication, farmerRoleMiddleware, controller.productAllDetails);
+router.get('/product-all-details/:productId', passportAuthentication, farmerRoleMiddleware, userRoleMiddleware, controller.productAllDetails);
 
 
 

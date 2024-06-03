@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const constants = require("../../config/constants.json");
 
 const farmerOrderModel = new mongoose.Schema(
     {
@@ -46,6 +45,4 @@ const farmerOrderModel = new mongoose.Schema(
 
 
 module.exports = mongoose.model("farmerOrder", farmerOrderModel);
-
-
 
