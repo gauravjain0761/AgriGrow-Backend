@@ -186,6 +186,7 @@ const addProduct = async (req, res) => {
                         images: imageFilePaths,
                         originalPrice: price,
                         offerPrice: offerPriceArray[index],
+                        saveRupees: price - offerPriceArray[index],
                         quantity: quantityArray[index],
                         weight: weightArray[index],
                         time: moment().unix(),
@@ -581,14 +582,16 @@ const productAllDetails = async (req, res) => {
     try {
         const productId = req.params.productId;
         const product = await cartModel.find({ productId: productId, /* userId: req.user._id */ })
-            .populate({
-                path: 'userId',
-                select: 'name email mobile image state city postalCode streetAddress'
-            })
-            .populate({
-                path: 'productId',
-                select: 'categoryId category name description image price discount status'
-            })
+            // .populate({
+            //     path: 'userId',
+            //     select: 'name email mobile image state city postalCode streetAddress'
+            // })
+            // .populate({
+            //     path: 'productId',
+            //     select: 'categoryId category name description image price discount status'
+            // })
+            .populate('userId')
+            .populate('productId')
             .exec();
 
         if (!product) {

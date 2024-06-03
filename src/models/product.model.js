@@ -153,6 +153,11 @@ const productSchema = new mongoose.Schema({
         required: true,
         default: 0,
     },
+    saveRupees: {
+        type: Number,
+        required: true,
+        default: 0,
+    },
     quantity: {
         type: Number,
         default: 0,
