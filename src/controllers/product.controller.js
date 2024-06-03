@@ -1,5 +1,6 @@
 const categoryModel = require('../models/category.model');
 const productModel = require('../models/product.model');
+const favoriteProductModel = require('../models/favoriteProduct.model');
 const cartModel = require('../models/cart.model');
 
 const { uploadProductImages, deleteUploadedFiles } = require('../../helpers/multer');
@@ -392,25 +393,37 @@ const getProductsListByCategory = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
 
         const { categoryId } = req.params;
-        const product = await productModel.find({ categoryId: categoryId, isAvailable: true })
+        const products = await productModel.find({ categoryId: categoryId, isAvailable: true })
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
             .exec();
 
-        if (!product) {
+        if (!products || products.length === 0) {
             return res.status(404).json({
                 status: false,
-                message: "not found!",
-            })
+                message: "products not found!",
+            });
         };
+
         const totalDocuments = await productModel.countDocuments({ categoryId: categoryId, isAvailable: true });
+
+        // Get the user's favorite products
+        const favoriteProducts = await favoriteProductModel.find({ userId: req.user._id }).select('productId');
+        const favoriteProductIds = favoriteProducts.map(fav => fav.productId.toString());
+
+        // Add 'isFavorite' field to each product
+        const productsWithFavoriteStatus = products.map(product => ({
+            ...product.toObject(),
+            isFavorite: favoriteProductIds.includes(product._id.toString())
+        }));
 
         return res.status(200).json({
             status: true,
             message: 'successfully fetched',
             totalDocuments: totalDocuments,
-            data: product
+            data: productsWithFavoriteStatus,
+            // data2: products
         });
     } catch (error) {
         return res.status(500).json({
@@ -427,25 +440,37 @@ const getAllProductsList = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
 
-        const product = await productModel.find({ isAvailable: true })
+        const products = await productModel.find({ isAvailable: true })
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
             .exec();
 
-        if (!product) {
+        if (!products || products.length === 0) {
             return res.status(404).json({
                 status: false,
-                message: "not found!",
-            })
+                message: "products not found!",
+            });
         };
+
         const totalDocuments = await productModel.countDocuments();
+
+        // Get the user's favorite products
+        const favoriteProducts = await favoriteProductModel.find({ userId: req.user._id }).select('productId');
+        const favoriteProductIds = favoriteProducts.map(fav => fav.productId.toString());
+
+        // Add 'isFavorite' field to each product
+        const productsWithFavoriteStatus = products.map(product => ({
+            ...product.toObject(),
+            isFavorite: favoriteProductIds.includes(product._id.toString())
+        }));
 
         return res.status(200).json({
             status: true,
             message: 'successfully fetched',
             totalDocuments: totalDocuments,
-            data: product
+            data: productsWithFavoriteStatus
+            // data: products,
         });
     } catch (error) {
         return res.status(500).json({
@@ -456,39 +481,39 @@ const getAllProductsList = async (req, res) => {
 };
 
 
-// get all best deal offer products
-const getAllBestDealProducts = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
+// // get all best deal offer products
+// const getAllBestDealProducts = async (req, res) => {
+//     try {
+//         const page = parseInt(req.query.page) || 1;
+//         const limit = parseInt(req.query.limit) || 10;
 
-        const product = await productModel.find({ bestDealOfferProduct: true, isAvailable: true })
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .exec();
+//         const product = await productModel.find({ bestDealOfferProduct: true, isAvailable: true })
+//             .sort({ createdAt: -1 })
+//             .skip((page - 1) * limit)
+//             .limit(limit)
+//             .exec();
 
-        if (!product) {
-            return res.status(404).json({
-                status: false,
-                message: "not found!",
-            })
-        };
-        const totalDocuments = await productModel.find({ bestDealOfferProduct: true, isAvailable: true }).countDocuments();
+//         if (!product) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: "not found!",
+//             })
+//         };
+//         const totalDocuments = await productModel.find({ bestDealOfferProduct: true, isAvailable: true }).countDocuments();
 
-        return res.status(200).json({
-            status: true,
-            message: 'successfully fetched all best deal offer products',
-            totalDocuments: totalDocuments,
-            data: product
-        });
-    } catch (error) {
-        return res.status(500).json({
-            status: false,
-            message: error.message,
-        });
-    }
-};
+//         return res.status(200).json({
+//             status: true,
+//             message: 'successfully fetched all best deal offer products',
+//             totalDocuments: totalDocuments,
+//             data: product
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message,
+//         });
+//     }
+// };
 
 // get product by product id
 const getProductDetails = async (req, res) => {
@@ -639,7 +664,7 @@ module.exports = {
     getAllProducts,
     getProductsListByCategory,
     getAllProductsList,
-    getAllBestDealProducts,
+    // getAllBestDealProducts,
     getProductDetails,
     searchProduct,
     productAllDetails,

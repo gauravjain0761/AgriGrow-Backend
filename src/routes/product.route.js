@@ -23,7 +23,7 @@ router.get('/getProductsListByCategory/:categoryId', passportAuthentication, con
 
 router.get('/getAllProductsList', passportAuthentication, controller.getAllProductsList);
 
-router.get('/get-all-best-deal-products', passportAuthentication, controller.getAllBestDealProducts);
+// router.get('/get-all-best-deal-products', passportAuthentication, controller.getAllBestDealProducts);
 
 router.get('/get-product-details/:productId', passportAuthentication, controller.getProductDetails);
 
