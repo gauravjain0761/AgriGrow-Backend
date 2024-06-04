@@ -175,14 +175,14 @@ exports.getCollectionCenterData = async (req, res) => {
 // get all collection center list   
 exports.getAllCollectionCenterList = async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
+        // const page = parseInt(req.query.page) || 1;
+        // const limit = parseInt(req.query.limit) || 10;
 
         const collectionCenter = await collectionCenterModel.find()
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .exec();
+        // .sort({ createdAt: -1 })
+        // .skip((page - 1) * limit)
+        // .limit(limit)
+        // .exec();
 
         if (!collectionCenter) {
             return res.status(404).json({
@@ -190,13 +190,13 @@ exports.getAllCollectionCenterList = async (req, res) => {
                 message: "not found!",
             })
         };
-        const totalDocuments = await collectionCenterModel.countDocuments();
+        // const totalDocuments = await collectionCenterModel.countDocuments();
 
         return res.status(200).json({
             status: true,
             message: 'successfully fetched',
-            totalDocuments: totalDocuments,
             data: collectionCenter
+            // totalDocuments: totalDocuments,
         });
     } catch (error) {
         return res.status(500).json({

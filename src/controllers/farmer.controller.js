@@ -748,6 +748,27 @@ const addCertificates = async (req, res) => {
 };
 
 
+
+// get profile
+const getAllCertificates = async (req, res) => {
+    try {
+        const user = req.user;
+
+        return res.status(200).json({
+            status: true,
+            message: "fetched all certificates successfully",
+            data: req.user
+        })
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message
+        })
+    }
+};
+
+
+
 // farmer logout
 const farmerLogOut = async (req, res) => {
     try {
@@ -784,6 +805,7 @@ module.exports = {
     updateProfile,
     updateFarmDetails,
     addCertificates,
+    getAllCertificates,
     farmerLogOut
 };
 
