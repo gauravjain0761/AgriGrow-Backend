@@ -102,6 +102,118 @@ const addProductToCart = async (req, res) => {
 
 
 
+
+
+
+
+
+// const addProductToCart = async (req, res) => {
+//     try {
+//         const user = req.user;
+//         const { productId, addQuantityId, quantity } = req.body;
+
+//         if (!productId || !addQuantityId || !quantity) {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: "Please provide productId, addQuantityId, and quantity"
+//             });
+//         }
+
+//         const product = await productModel.findOne({ _id: productId });
+//         if (!product) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: 'Product not found'
+//             });
+//         }
+
+//         const addQuantityItem = product.addQuantity.id(addQuantityId);
+//         if (!addQuantityItem) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: 'AddQuantity item not found'
+//             });
+//         }
+
+//         if (quantity <= 0) {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: 'Please add a minimum of 1 quantity'
+//             });
+//         }
+
+//         if (addQuantityItem.quantity < quantity) {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: `Available product quantity is ${addQuantityItem.quantity}`
+//             });
+//         }
+
+//         const totalPrice = quantity * addQuantityItem.offerPrice;
+
+//         const existingCartData = await cartModel.findOne({ userId: user._id });
+
+//         if (existingCartData) {
+//             const existingFarmerIds = existingCartData.productDetails.map(detail => detail.farmerId.toString());
+//             const currentFarmerId = product.farmerId.toString();
+
+//             if (existingFarmerIds.length > 0 && existingFarmerIds[0] !== currentFarmerId) {
+//                 return res.status(400).json({
+//                     status: false,
+//                     message: 'You can only add products from one farmer at a time to your cart'
+//                 });
+//             }
+
+//             existingCartData.productDetails.push({
+//                 productId: productId,
+//                 farmerId: product.farmerId,
+//                 quantity: quantity,
+//                 totalPrice: totalPrice,
+//                 time: moment().unix().toString(),
+//             });
+
+//             await existingCartData.save();
+
+//             return res.status(201).json({
+//                 status: true,
+//                 message: 'Successfully added to cart',
+//                 data: existingCartData
+//             });
+//         }
+
+//         const newCart = new cartModel({
+//             userId: user._id,
+//             productDetails: [{
+//                 productId: productId,
+//                 farmerId: product.farmerId,
+//                 quantity: quantity,
+//                 totalPrice: totalPrice,
+//                 time: moment().unix().toString(),
+//             }]
+//         });
+
+//         await newCart.save();
+
+//         return res.status(201).json({
+//             status: true,
+//             message: 'Successfully added to cart',
+//             data: newCart
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message
+//         });
+//     }
+// };
+
+
+
+
+
+
+
+
 // getAllCartProducts
 const getAllCartProducts = async (req, res) => {
     try {

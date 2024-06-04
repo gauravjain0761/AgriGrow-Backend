@@ -211,7 +211,9 @@ exports.searchVehicle = async (req, res) => {
             ],
             userId: req.user._id
         })
-            .sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).exec();
+            .sort({ createdAt: -1 })
+            .skip((page - 1) * limit).limit(limit)
+            .exec();
 
         if (!vehicle) {
             return res.status(404).json({

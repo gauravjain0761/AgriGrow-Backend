@@ -126,7 +126,7 @@ const moment = require('moment');
 
 
 
-
+// add Product
 const addProduct = async (req, res) => {
     try {
         const { id } = req.params;
@@ -149,12 +149,6 @@ const addProduct = async (req, res) => {
                 };
 
                 const { images, addOnImages } = req.files;
-                // if (!images || images.length === 0) {
-                //     return res.status(400).send({
-                //         status: false,
-                //         message: 'image is required'
-                //     });
-                // };
 
                 // const imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
                 const imageFilePaths = images ? images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`) : [];
@@ -176,52 +170,61 @@ const addProduct = async (req, res) => {
                     });
                 };
 
-                const productPromises = originalPriceArray.map((price, index) => {
-                    const product = new productModel({
-                        farmerId: req.user._id,
-                        categoryId: category._id,
-                        category: category.name,
-                        productName,
-                        description,
-                        images: imageFilePaths,
-                        originalPrice: price,
-                        offerPrice: offerPriceArray[index],
-                        saveRupees: price - offerPriceArray[index],
-                        quantity: quantityArray[index],
-                        weight: weightArray[index],
-                        time: moment().unix(),
-                    });
+                const addQuantityArray = originalPriceArray.map((price, index) => ({
+                    originalPrice: price,
+                    offerPrice: offerPriceArray[index],
+                    saveRupees: price - offerPriceArray[index],
+                    quantity: quantityArray[index],
+                    weight: weightArray[index],
+                }));
 
-                    if (name) {
-                        // const addOnImageFilePaths = addOnImages.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
-                        const addOnImageFilePaths = addOnImages ? addOnImages.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`) : [];
-                        const addOnNamesArray = name.split(',').map(name => name.trim());
-                        const addOnPricesArray = req.body.price.split(',').map(price => parseFloat(price.trim()));
-
-                        if (addOnImageFilePaths.length !== addOnNamesArray.length || addOnNamesArray.length !== addOnPricesArray.length) {
-                            deleteUploadedFiles(req.files);
-                            return res.status(400).send({
-                                status: false,
-                                message: 'All add-on array fields must have the same length',
-                            });
-                        }
-
-                        product.addOns = addOnNamesArray.map((name, index) => ({
-                            image: addOnImageFilePaths[index],
-                            name,
-                            price: addOnPricesArray[index],
-                        }));
-                    }
-
-                    return product.save();
+                // const productPromises = originalPriceArray.map((price, index) => {
+                const product = new productModel({
+                    farmerId: req.user._id,
+                    categoryId: category._id,
+                    category: category.name,
+                    productName,
+                    description,
+                    images: imageFilePaths,
+                    addQuantity: addQuantityArray,
+                    time: moment().unix(),
+                    // originalPrice: price,
+                    // offerPrice: offerPriceArray[index],
+                    // saveRupees: price - offerPriceArray[index],
+                    // quantity: quantityArray[index],
+                    // weight: weightArray[index],
                 });
 
-                const savedProducts = await Promise.all(productPromises);
+                if (name) {
+                    // const addOnImageFilePaths = addOnImages.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
+                    const addOnImageFilePaths = addOnImages ? addOnImages.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`) : [];
+                    const addOnNamesArray = name.split(',').map(name => name.trim());
+                    const addOnPricesArray = req.body.price.split(',').map(price => parseFloat(price.trim()));
+
+                    if (addOnImageFilePaths.length !== addOnNamesArray.length || addOnNamesArray.length !== addOnPricesArray.length) {
+                        deleteUploadedFiles(req.files);
+                        return res.status(400).send({
+                            status: false,
+                            message: 'All add-on array fields must have the same length',
+                        });
+                    }
+
+                    product.addOns = addOnNamesArray.map((name, index) => ({
+                        image: addOnImageFilePaths[index],
+                        name,
+                        price: addOnPricesArray[index],
+                    }));
+                }
+
+                await product.save();
+                // });
+
+                // const savedProducts = await Promise.all(productPromises);
 
                 return res.status(201).json({
                     status: true,
                     message: 'Products successfully created',
-                    data: savedProducts
+                    data: product
                 });
             } catch (error) {
                 // console.log(error);
@@ -241,7 +244,32 @@ const addProduct = async (req, res) => {
 };
 
 
+// get product by product id
+const getFarmerProductDetails = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const user = req.user;
 
+        const product = await productModel.findOne({ _id: productId, farmerId: user._id, isAvailable: true });
+        if (!product) {
+            return res.status(404).json({
+                status: false,
+                message: "not found!",
+            })
+        };
+
+        return res.status(200).json({
+            status: true,
+            message: 'successfully fetched',
+            data: product
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
+    }
+};
 
 
 
@@ -271,86 +299,137 @@ const addProduct = async (req, res) => {
 
 
 
-// updateProduct
+// // updateProduct
+// const updateProduct = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+
+//         const product = await productModel.findById(id);
+//         if (!product) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: 'product not found!'
+//             })
+//         };
+
+//         // if (product.farmerId.toString() !== req.user._id.toString()) {
+//         if (!product.farmerId.equals(req.user._id)) {
+//             return res.status(403).json({
+//                 status: false,
+//                 message: "Only the farmer who created the product has access to update it.",
+//             });
+//         };
+
+//         uploadProductImages(req, res, async (err) => {
+//             try {
+//                 if (err) {
+//                     deleteUploadedFiles(req.files);
+//                     return res.status(500).send({
+//                         status: false,
+//                         message: 'Error during file upload: ' + err.message,
+//                     });
+//                 };
+
+//                 const { productName, description, originalPrice, offerPrice, quantity, weight } = req.body;
+
+//                 const { images } = req.files;
+//                 let imageFilePaths = product.images;
+
+//                 if (images && images.length > 0) {
+//                     // Delete old images if new images are uploaded
+//                     if (product.images && product.images.length > 0) {
+//                         product.images.forEach(oldImagePath => {
+//                             const absolutePath = path.join(__dirname, '../../', oldImagePath);
+//                             if (fs.existsSync(absolutePath)) {
+//                                 fs.unlinkSync(absolutePath);
+//                             }
+//                         });
+//                     }
+
+//                     imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
+//                 };
+
+//                 product.productName = productName ? productName : product.productName;
+//                 product.description = description ? description : product.description;
+//                 product.originalPrice = originalPrice ? originalPrice : product.originalPrice;
+//                 product.offerPrice = offerPrice ? offerPrice : product.offerPrice;
+//                 product.quantity = quantity ? quantity : product.quantity;
+//                 product.weight = weight ? weight : product.weight;
+//                 product.time = moment().unix();
+//                 product.images = imageFilePaths ? imageFilePaths : product.images;
+
+//                 await product.save();
+//                 return res.status(200).json({
+//                     status: true,
+//                     message: 'product updated successfully',
+//                     data: product
+//                 });
+//             } catch (error) {
+//                 console.log(error);
+//                 return res.status(500).send({
+//                     status: false,
+//                     message: error.message,
+//                 });
+//             }
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message,
+//         });
+//     }
+// };
+
+
+
+
 const updateProduct = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { quantity, productId, addQuantityId } = req.body;
 
-        const product = await productModel.findById(id);
+        if (!quantity || quantity < 0) {
+            return res.status(400).json({
+                status: false,
+                message: "Please provide a valid quantity"
+            });
+        }
+
+        const product = await productModel.findOne({ _id: productId, farmerId: req.user._id });
         if (!product) {
             return res.status(404).json({
                 status: false,
-                message: 'product not found!'
-            })
-        };
-
-        // if (product.farmerId.toString() !== req.user._id.toString()) {
-        if (!product.farmerId.equals(req.user._id)) {
-            return res.status(403).json({
-                status: false,
-                message: "Only the farmer who created the product has access to update it.",
+                message: 'Product not found'
             });
         };
 
-        uploadProductImages(req, res, async (err) => {
-            try {
-                if (err) {
-                    deleteUploadedFiles(req.files);
-                    return res.status(500).send({
-                        status: false,
-                        message: 'Error during file upload: ' + err.message,
-                    });
-                };
+        const addQuantityIndex = product.addQuantity.findIndex(item => item._id.toString() === addQuantityId.toString());
+        console.log(addQuantityIndex);
 
-                const { productName, description, originalPrice, offerPrice, quantity, weight } = req.body;
+        if (addQuantityIndex === -1) {
+            return res.status(404).json({
+                status: false,
+                message: 'AddQuantity item not found'
+            });
+        };
 
-                const { images } = req.files;
-                let imageFilePaths = product.images;
+        product.addQuantity[addQuantityIndex].quantity = quantity;
 
-                if (images && images.length > 0) {
-                    // Delete old images if new images are uploaded
-                    if (product.images && product.images.length > 0) {
-                        product.images.forEach(oldImagePath => {
-                            const absolutePath = path.join(__dirname, '../../', oldImagePath);
-                            if (fs.existsSync(absolutePath)) {
-                                fs.unlinkSync(absolutePath);
-                            }
-                        });
-                    }
+        await product.save();
 
-                    imageFilePaths = images.map(image => `/uploads/productImages/${moment().unix()}-${image.originalname}`);
-                };
-
-                product.productName = productName ? productName : product.productName;
-                product.description = description ? description : product.description;
-                product.originalPrice = originalPrice ? originalPrice : product.originalPrice;
-                product.offerPrice = offerPrice ? offerPrice : product.offerPrice;
-                product.quantity = quantity ? quantity : product.quantity;
-                product.weight = weight ? weight : product.weight;
-                product.time = moment().unix();
-                product.images = imageFilePaths ? imageFilePaths : product.images;
-
-                await product.save();
-                return res.status(200).json({
-                    status: true,
-                    message: 'product updated successfully',
-                    data: product
-                });
-            } catch (error) {
-                console.log(error);
-                return res.status(500).send({
-                    status: false,
-                    message: error.message,
-                });
-            }
+        return res.status(200).json({
+            status: true,
+            message: 'Product quantity updated successfully',
+            data: product
         });
     } catch (error) {
         return res.status(500).json({
             status: false,
-            message: error.message,
+            message: error.message
         });
     }
 };
+
+
 
 // get all products
 const getAllProducts = async (req, res) => {
@@ -680,6 +759,7 @@ const deleteProduct = async (req, res) => {
 
 module.exports = {
     addProduct,
+    getFarmerProductDetails,
     // productAddOns,
     updateProduct,
     getAllProducts,

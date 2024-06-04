@@ -143,57 +143,57 @@ const productSchema = new mongoose.Schema({
         // required: true,
         default: null,
     }],
-    // addQuantity: {
-    //     type: [{
-    //         originalPrice: {
-    //             type: Number,
-    //             required: true,
-    //             default: 0,
-    //         },
-    //         offerPrice: {
-    //             type: Number,
-    //             required: true,
-    //             default: 0,
-    //         },
-    //         saveRupees: {
-    //             type: Number,
-    //             required: true,
-    //             default: 0,
-    //         },
-    //         quantity: {
-    //             type: Number,
-    //             default: 1,
-    //         },
-    //         weight: {
-    //             type: String,
-    //             default: 'gram',
-    //         },
-    //     }],
-    //     default: []
+    addQuantity: {
+        type: [{
+            originalPrice: {
+                type: Number,
+                required: true,
+                default: 0,
+            },
+            offerPrice: {
+                type: Number,
+                required: true,
+                default: 0,
+            },
+            saveRupees: {
+                type: Number,
+                required: true,
+                default: 0,
+            },
+            quantity: {
+                type: Number,
+                default: 1,
+            },
+            weight: {
+                type: String,
+                default: 'gram',
+            },
+        }],
+        default: []
+    },
+    // originalPrice: {
+    //     type: Number,
+    //     required: true,
+    //     default: 0,
     // },
-    originalPrice: {
-        type: Number,
-        required: true,
-        default: 0,
-    },
-    offerPrice: {
-        type: Number,
-        required: true,
-        default: 0,
-    },
-    saveRupees: {
-        type: Number,
-        required: true,
-        default: 0,
-    },
-    quantity: {
-        type: Number,
-        default: 0,
-    },
-    weight: {
-        type: String,
-        default: 'gram',
-    },
+    // offerPrice: {
+    //     type: Number,
+    //     required: true,
+    //     default: 0,
+    // },
+    // saveRupees: {
+    //     type: Number,
+    //     required: true,
+    //     default: 0,
+    // },
+    // quantity: {
+    //     type: Number,
+    //     default: 0,
+    // },
+    // weight: {
+    //     type: String,
+    //     default: 'gram',
+    // },
     addOns: [{
         image: {
             type: String,

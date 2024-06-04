@@ -752,12 +752,25 @@ const addCertificates = async (req, res) => {
 // get profile
 const getAllCertificates = async (req, res) => {
     try {
-        const user = req.user;
+        const farmer = req.user;
 
         return res.status(200).json({
             status: true,
             message: "fetched all certificates successfully",
-            data: req.user
+            // data: req.user
+            data: {
+                India_Organic_Certificate: farmer.India_Organic_Certificate,
+                Organic_Farmer_And_Growers: farmer.Organic_Farmer_And_Growers,
+                National_Program_For_Sustainable_Aquaculture: farmer.National_Program_For_Sustainable_Aquaculture,
+                Spices_BoardOrganic_Certification: farmer.Spices_BoardOrganic_Certification,
+                Fair_Trade_India_Certification: farmer.Fair_Trade_India_Certification,
+                India_Good_Agricultural_Practices: farmer.India_Good_Agricultural_Practices,
+                Participatory_Guarantee_System: farmer.Participatory_Guarantee_System,
+                National_Programme_On_Organic_Production: farmer.National_Programme_On_Organic_Production,
+                Bureau_Of_Indian_Standards: farmer.Bureau_Of_Indian_Standards,
+                Rainfed_Area_Authority: farmer.Rainfed_Area_Authority,
+                Any_Other_Certificate: farmer.Any_Other_Certificate,
+            }
         })
     } catch (error) {
         return res.status(500).json({
