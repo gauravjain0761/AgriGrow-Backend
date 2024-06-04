@@ -13,9 +13,9 @@ router.get('/get-all-cart-products', passportAuthentication, userRoleMiddleware,
 
 router.get('/getAllPlacedOrdersList', passportAuthentication, userRoleMiddleware, controller.getAllPlacedOrdersList);
 
-router.post('/update-cart-product/:id', passportAuthentication, userRoleMiddleware, controller.updateCartProduct);
+router.patch('/update-cart-product/:productDetailsId', passportAuthentication, userRoleMiddleware, controller.updateCartProduct);
 
-router.post('/remove-product-from-cart/:id', passportAuthentication, userRoleMiddleware, controller.removeProductFromCart);
+router.delete('/remove-product-from-cart/:productDetailsId', passportAuthentication, userRoleMiddleware, controller.removeProductFromCart);
 
 router.post('/buyProduct', passportAuthentication, userRoleMiddleware, controller.buyProduct);
 

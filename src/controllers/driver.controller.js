@@ -255,7 +255,7 @@ exports.searchDriver = async (req, res) => {
 };
 
 
-// remove driver status
+// update driver status
 exports.updateDriverStatus = async (req, res) => {
     try {
         const { driverId } = req.params;

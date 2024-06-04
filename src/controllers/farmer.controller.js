@@ -12,6 +12,20 @@ const moment = require('moment');
 
 
 
+// Helper function to delete an old image
+const deleteOldImage = (imagePath) => {
+    if (imagePath) {
+        const fullPath = path.join(__dirname, '../../', imagePath);
+        if (fs.existsSync(fullPath)) {
+            fs.unlinkSync(fullPath);
+        }
+    }
+};
+
+
+
+
+
 // const storage = multer.diskStorage( {
 //     destination: function ( req, file, cb )
 //     {
@@ -563,33 +577,43 @@ const signInWithFacebook = async (req, res) => {
     }
 };
 
+
 // update profile
 const updateProfile = async (req, res) => {
     try {
-        const user = await req.user;
-        uploadProfileImage(req, res, async (err) => {
+        uploadCertificates(req, res, async (err) => {
             try {
                 if (err) {
+                    deleteUploadedFiles(req.files);
                     return res.status(500).send({
                         status: false,
                         message: 'Error during file upload: ' + err.message,
                     });
                 };
 
-                const { name, email, mobile } = req.body;
-                if (user.image) {
-                    const oldImagePath = path.join(__dirname, '../../', user.image);
-                    // const oldImagePath = path.join( __dirname, '../../', user.image );
-                    if (fs.existsSync(oldImagePath)) {
-                        fs.unlinkSync(oldImagePath);
-                    }
-                };
-                const imageFilePath = req.file ? `/uploads/profileImages/${moment().unix()}-${req.file.originalname}` : null;
+                const user = req.user;
+                // console.log(user);
+                const { name, GST_Number } = req.body;
 
-                user.email = email ? email.toLowerCase() : user.email;
-                user.mobile = mobile ? mobile : user.mobile;
+                // const imageFilePath = req.file ? `/uploads/profileImages/${moment().unix()}-${req.file.originalname}` : null;
+                const image = req.files.image ? `/uploads/farmerCertificates/${moment().unix()}-${req.files.image[0].originalname}` : null;
+                const Aadhaar_Card_Front = req.files.Aadhaar_Card_Front ? `/uploads/farmerCertificates/${moment().unix()}-${req.files.Aadhaar_Card_Front[0].originalname}` : null;
+                const Aadhaar_Card_Back = req.files.Aadhaar_Card_Back ? `/uploads/farmerCertificates/${moment().unix()}-${req.files.Aadhaar_Card_Back[0].originalname}` : null;
+                const Farmer_Card = req.files.Farmer_Card ? `/uploads/farmerCertificates/${moment().unix()}-${req.files.Farmer_Card[0].originalname}` : null;
+
+                // Delete old images if new ones are uploaded
+                if (image) deleteOldImage(user.image);
+                if (Aadhaar_Card_Front) deleteOldImage(user.Aadhaar_Card_Front);
+                if (Aadhaar_Card_Back) deleteOldImage(user.Aadhaar_Card_Back);
+                if (Farmer_Card) deleteOldImage(user.Farmer_Card);
+
+
                 user.name = name ? name : user.name;
-                user.image = imageFilePath ? imageFilePath : user.image;
+                user.GST_Number = GST_Number ? GST_Number : user.GST_Number;
+                user.image = image ? image : user.image;
+                user.Aadhaar_Card_Front = Aadhaar_Card_Front ? Aadhaar_Card_Front : user.Aadhaar_Card_Front;
+                user.Aadhaar_Card_Back = Aadhaar_Card_Back ? Aadhaar_Card_Back : user.Aadhaar_Card_Back;
+                user.Farmer_Card = Farmer_Card ? Farmer_Card : user.Farmer_Card;
 
                 await user.save();
 
@@ -600,13 +624,6 @@ const updateProfile = async (req, res) => {
                 });
             } catch (error) {
                 console.log(error);
-                if (error.code === 11000 && error.keyPattern && (error.keyPattern.email || error.keyPattern.mobile)) {
-                    const violatedKeys = Object.keys(error.keyPattern);
-                    return res.status(400).json({
-                        status: false,
-                        message: `${violatedKeys} is already registered. Please use a different ${violatedKeys}.`,
-                    });
-                }
                 return res.status(500).send({
                     status: false,
                     message: error.message,
@@ -620,6 +637,8 @@ const updateProfile = async (req, res) => {
         })
     }
 };
+
+
 
 // update farm details
 const updateFarmDetails = async (req, res) => {
@@ -648,17 +667,6 @@ const updateFarmDetails = async (req, res) => {
 };
 
 
-
-// Helper function to delete an old image
-const deleteOldImage = (imagePath) => {
-    if (imagePath) {
-        console.log(imagePath);
-        const fullPath = path.join(__dirname, '../../', imagePath);
-        if (fs.existsSync(fullPath)) {
-            fs.unlinkSync(fullPath);
-        }
-    }
-};
 
 
 // add certificates

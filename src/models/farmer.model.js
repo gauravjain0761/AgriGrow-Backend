@@ -47,6 +47,11 @@ const farmerModel = new mongoose.Schema(
             default: null,
             // unique: true,
         },
+        GST_Number: {
+            type: String,
+            default: null,
+            // unique: true,
+        },
         state: {
             type: String,
             default: null,
@@ -97,6 +102,10 @@ const farmerModel = new mongoose.Schema(
             default: null,
         },
         PAN_Card: {
+            type: String,
+            default: null,
+        },
+        Farmer_Card: {
             type: String,
             default: null,
         },

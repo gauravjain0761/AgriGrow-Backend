@@ -74,9 +74,11 @@ exports.uploadCertificates = multer({
         fileSize: 5 * 1024 * 1024,
     },
 }).fields([
+    { name: 'image', maxCount: 1 },
     { name: 'Aadhaar_Card_Front', maxCount: 1 },
     { name: 'Aadhaar_Card_Back', maxCount: 1 },
     { name: 'PAN_Card', maxCount: 1 },
+    { name: 'Farmer_Card', maxCount: 1 },
     { name: 'India_Organic_Certificate', maxCount: 1 },
     { name: 'Organic_Farmer_And_Growers', maxCount: 1 },
     { name: 'National_Program_For_Sustainable_Aquaculture', maxCount: 1 },
