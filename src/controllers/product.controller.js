@@ -743,7 +743,6 @@ const deleteProduct = async (req, res) => {
         };
 
         await productModel.findByIdAndDelete(productId);
-
         return res.status(200).send({
             status: true,
             message: "Product Deleted Successfully",
@@ -756,6 +755,9 @@ const deleteProduct = async (req, res) => {
         })
     }
 };
+
+
+
 
 module.exports = {
     addProduct,

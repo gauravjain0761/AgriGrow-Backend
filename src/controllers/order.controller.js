@@ -43,7 +43,7 @@ exports.addOrder = async (req, res) => {
 };
 
 
-
+// remove new status
 // all order list
 exports.allOrderList = async (req, res) => {
     try {
@@ -51,13 +51,17 @@ exports.allOrderList = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
 
         const order = await orderModel.find(
-            { userId: req.user._id, assignToDriver: false, isAvailable: true }
+            {
+                userId: req.user._id,
+                assignToDriver: false,
+                status: { $ne: constants.ORDER_STATUS.NEW },
+                isAvailable: true
+            }
         )
             // .populate({
             //     path: 'productId',
             //     select: '_id productName description images originalPrice offerPrice',
             // })
-            // .exec();
             .populate('productId')
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
@@ -71,7 +75,12 @@ exports.allOrderList = async (req, res) => {
             })
         };
 
-        const totalDocuments = await orderModel.countDocuments({ userId: req.user._id, assignToDriver: false, isAvailable: true });
+        const totalDocuments = await orderModel.countDocuments({
+            userId: req.user._id,
+            assignToDriver: false,
+            status: { $ne: constants.ORDER_STATUS.NEW },
+            isAvailable: true
+        });
 
         return res.status(200).json({
             status: true,
