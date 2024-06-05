@@ -512,28 +512,41 @@ exports.driverAllOrderList = async (req, res) => {
 
 
 
-// update order status from New to inProgree
-exports.updateOrederStatus = async (req, res) => {
+// update order status from New to InProgress
+exports.updateOrderStatus = async (req, res) => {
     try {
         const { orderId } = req.params;
         const { status } = req.body;
         const user = req.user;
 
+        // Ensure status is being updated to 'INPROGRESS'
+        if (status.toUpperCase() === 'IN_PROGRESS') {
+            // Check if there is any other order with 'INPROGRESS' status for this driver
+            const existingInProgressOrder = await orderModel.findOne({ driverId: user._id, status: 'IN_PROGRESS' });
+
+            if (existingInProgressOrder) {
+                return res.status(400).json({
+                    status: false,
+                    message: 'You already have an order in progress. Please complete it before starting a new one.',
+                });
+            }
+        };
+
         const order = await orderModel.findOne({ _id: orderId, driverId: user._id });
         if (!order) {
             return res.status(404).json({
                 status: false,
-                message: "order not found!",
-            })
-        };
+                message: 'Order not found!',
+            });
+        }
 
         order.status = status.toUpperCase();
         await order.save();
 
         return res.status(200).json({
             status: true,
-            message: 'order status updated successfully',
-            data: order
+            message: 'Order status updated successfully',
+            data: order,
         });
     } catch (error) {
         return res.status(500).json({

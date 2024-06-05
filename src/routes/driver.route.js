@@ -32,7 +32,7 @@ router.get('/trackDriverLocation/:driverId', passportAuthentication, ccRoleMiddl
 
 router.get('/driverAllOrderList', passportAuthentication, driverRoleMiddleware, controller.driverAllOrderList);
 
-router.patch('/updateOrederStatus/:orderId', passportAuthentication, driverRoleMiddleware, controller.updateOrederStatus);
+router.patch('/updateOrderStatus/:orderId', passportAuthentication, driverRoleMiddleware, controller.updateOrderStatus);
 
 router.patch('/failedOrder/:orderId', passportAuthentication, driverRoleMiddleware, controller.failedOrder);
 
