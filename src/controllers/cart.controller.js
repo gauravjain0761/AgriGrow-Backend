@@ -6,46 +6,55 @@ var QRCode = require('qrcode')
 const constants = require("../../config/constants.json");
 
 
+// 05-06-2024
 // add product to cart
 const addProductToCart = async (req, res) => {
     try {
         const user = req.user;
-        const { productId, quantity } = req.body;
+        const { productId, addQuantityId, quantity } = req.body;
 
-        if (!productId || !quantity) {
+        if (!productId || !addQuantityId || !quantity) {
             return res.status(400).json({
                 status: false,
-                message: "please provide both productId & quantity"
-            })
+                message: "Please provide productId, addQuantityId, and quantity"
+            });
         };
 
         const product = await productModel.findOne({ _id: productId });
         if (!product) {
             return res.status(404).json({
                 status: false,
-                message: 'product not found'
-            })
+                message: 'Product not found'
+            });
         };
+
+        const addQuantityObj = product.addQuantity.id(addQuantityId);
+        if (!addQuantityObj) {
+            return res.status(404).json({
+                status: false,
+                message: `AddQuantity object not found by this Id ${addQuantityId}`
+            });
+        };
+
         if (quantity <= 0) {
             return res.status(400).json({
                 status: false,
-                message: 'please add minimum 1 quantity'
-            })
-        };
-        if (product.quantity < quantity) {
-            return res.status(400).json({
-                status: false,
-                message: `available product quantity is ${product.quantity}`
-            })
+                message: 'Please add a minimum of 1 quantity'
+            });
         };
 
-        const totalPrice = quantity * product.offerPrice;
-        // const qrCodeData = await QRCode.toDataURL(product._id.toString());
+        if (addQuantityObj.quantity < quantity) {
+            return res.status(400).json({
+                status: false,
+                message: `Available product quantity is ${addQuantityObj.quantity}`
+            });
+        };
+
+        const totalPrice = quantity * addQuantityObj.offerPrice;
 
         const existingCartData = await cartModel.findOne({ userId: user._id });
 
         if (existingCartData) {
-
             const existingFarmerIds = existingCartData.productDetails.map(detail => detail.farmerId.toString());
             const currentFarmerId = product.farmerId.toString();
 
@@ -58,6 +67,7 @@ const addProductToCart = async (req, res) => {
 
             existingCartData.productDetails.push({
                 productId: productId,
+                addQuantityId: addQuantityId,
                 farmerId: product.farmerId,
                 quantity: quantity,
                 totalPrice: totalPrice,
@@ -68,7 +78,7 @@ const addProductToCart = async (req, res) => {
 
             return res.status(201).json({
                 status: true,
-                message: 'successfully added to cart',
+                message: 'Successfully added to cart',
                 data: existingCartData
             });
         };
@@ -77,11 +87,11 @@ const addProductToCart = async (req, res) => {
             userId: user._id,
             productDetails: [{
                 productId: productId,
+                addQuantityId: addQuantityId,
                 farmerId: product.farmerId,
                 quantity: quantity,
                 totalPrice: totalPrice,
                 time: moment().unix().toString(),
-                // QRCode: qrCodeData
             }]
         });
 
@@ -89,14 +99,14 @@ const addProductToCart = async (req, res) => {
 
         return res.status(201).json({
             status: true,
-            message: 'successfully added to cart',
+            message: 'Successfully added to cart',
             data: newCart
         });
     } catch (error) {
         return res.status(500).json({
             status: false,
             message: error.message
-        })
+        });
     }
 };
 
@@ -514,154 +524,90 @@ const removeProductFromCart = async (req, res) => {
 };
 
 
-// // buy product
-// const buyProduct = async (req, res) => {
-//     try {
-//         const user = req.user;
-//         const { cartId } = req.body;
-
-//         // if (!cartId) {
-//         //     return res.status(400).json({
-//         //         status: false,
-//         //         message: "please provide cartId"
-//         //     })
-//         // };
-
-//         const cart = await cartModel.findOne({ _id: cartId, userId: user._id });
-//         if (!cart) {
-//             return res.status(404).json({
-//                 status: false,
-//                 message: 'product not found'
-//             })
-//         };
-
-//         const product = await productModel.findOne({ _id: cart.productId });
-
-//         // // const totalPrice = quantity * product.price;
-//         // const addProduct = new cartModel({
-//         //     userId: user._id,
-//         //     productId: productId,
-//         //     farmerId: product.farmerId,
-//         //     quantity: quantity,
-//         //     // totalPrice: totalPrice,
-//         //     time: moment().unix()
-//         // });
-
-//         // if (!addProduct) {
-//         //     return res.status(400).json({
-//         //         status: false,
-//         //         message: `can't add product to cart`
-//         //     })
-//         // };
 
 
-//         product.userId.push(user._id);
-//         product.quantity = product.quantity - cart.quantity;
-//         product.quantity == 0 ? product.status = constants.PRODUCT_STATUS.SOLD : constants.PRODUCT_STATUS.AVAILABLE;
-
-//         await product.save();
-
-
-//         const generateQRCodeForTheData = { productId: cart.productId, userId: cart.userId };
-//         const qrCode = await QRCode.toDataURL(generateQRCodeForTheData);
-
-//         cart.QRCode = qrCode;
-//         cart.status = 'PlacedOredr';
-//         await cart.save();
-
-//         return res.status(201).json({
-//             status: true,
-//             message: 'Order Placed successfully',
-//             data: cart,
-//             qrCodeData: qrCode
-//         })
-//     } catch (error) {
-//         return res.status(500).json({
-//             status: false,
-//             message: error.message
-//         })
-//     }
-// };
-
-
-
-
-
-// buy product API
+// 05/06/2024
+// buy product
 const buyProduct = async (req, res) => {
     try {
         const user = req.user;
-        const { productIds } = req.body; // Array of productIds
-
-        if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
-            return res.status(400).json({
-                status: false,
-                message: "please provide an array of productIds"
-            });
-        }
 
         const cartData = await cartModel.findOne({ userId: user._id });
         if (!cartData) {
             return res.status(404).json({
                 status: false,
-                message: 'cart not found'
+                message: 'Cart not found'
             });
         };
-        console.log('cartData---->', cartData);
 
+        // Filter products with status "AddedToCart"
         const productsToBuy = cartData.productDetails.filter(productDetail =>
-            productIds.includes(productDetail.productId.toString())
+            productDetail.status === 'AddedToCart'
         );
-
-        console.log('productsToBuy ---->', productsToBuy);
+        // console.log('productsToBuy ---->', productsToBuy);
 
         if (productsToBuy.length === 0) {
-            return res.status(404).json({
+            return res.status(400).json({
                 status: false,
-                message: 'none of the products are in the cart'
+                message: 'No products with status "AddedToCart" in the cart'
             });
         };
 
         for (let productDetail of productsToBuy) {
-            const product = await productModel.findOne({ _id: productDetail.productId });
-            console.log('product  ----->', product);
-            console.log('productDetail  ----->', productDetail);
+
+            const product = await productModel.findOne({ _id: productDetail.productId.toString() });
+            // console.log('product  ----->', product);
+            // console.log('productDetail  ----->', productDetail);
 
             if (!product) {
                 return res.status(404).json({
                     status: false,
-                    message: `product with id ${productDetail.productId} not found`
+                    message: `Product with id ${productDetail.productId} not found`
                 });
             };
 
-            if (product.quantity < productDetail.quantity) {
+            // Find the addQuantity object
+            const addQuantityObj = product.addQuantity.find(element => element._id.toString() === productDetail.addQuantityId);
+            // console.log('addQuantityObj  ----->', addQuantityObj);
+
+            if (!addQuantityObj) {
+                return res.status(404).json({
+                    status: false,
+                    message: `AddQuantity object not found by this Id ${productDetail.addQuantityId}`
+                });
+            };
+
+            if (addQuantityObj.quantity < productDetail.quantity) {
                 return res.status(400).json({
                     status: false,
-                    message: `insufficient quantity for product with id ${productDetail.productId}, the avaailable quantity is ${productDetail.quantity} `
+                    message: `Insufficient quantity for product with id ${productDetail.productId}, available quantity is ${addQuantityObj.quantity}`
                 });
             };
 
-            // -----------------------------------------------------------------------------------
-            product.quantity -= productDetail.quantity;
-            if (product.quantity === 0) {
-                product.status = constants.PRODUCT_STATUS.SOLD;
+            // Deduct quantity from the specific addQuantity entry
+            addQuantityObj.quantity -= productDetail.quantity;
+            if (addQuantityObj.quantity === 0) {
+                addQuantityObj.status = constants.PRODUCT_STATUS.SOLD;
             };
+
+            // Update product in the database
             await product.save();
 
-            // ------------------------------------------------------------------------------------
+            // Create a new order in the farmerOrderModel
             const farmerOrder = new farmerOrderModel({
                 userId: user._id,
                 productId: productDetail.productId,
+                addQuantityId: productDetail.addQuantityId,
                 farmerId: productDetail.farmerId,
                 status: 'New',
                 quantity: productDetail.quantity,
                 totalPrice: productDetail.totalPrice,
                 time: moment().unix()
             });
-            await farmerOrder.save();
-            console.log('farmerOrder---->', farmerOrder);
 
-            // --------------------------------------------------------------------------------------
+            await farmerOrder.save();
+            // console.log('farmerOrder---->', farmerOrder);
+
             // Generate QR code for the specific product
             const qrCodeData = await QRCode.toDataURL(productDetail.productId.toString());
 
@@ -671,11 +617,12 @@ const buyProduct = async (req, res) => {
             productDetail.QRCode = qrCodeData;
         };
 
+        // Save updated cart data
         await cartData.save();
 
         return res.status(200).json({
             status: true,
-            message: 'products bought successfully',
+            message: 'Products bought successfully',
             data: cartData
         });
     } catch (error) {

@@ -1,4 +1,5 @@
 const farmerOrderModel = require('../models/farmerOrder.model');
+const productModel = require('../models/product.model');
 const moment = require('moment');
 
 
@@ -26,6 +27,35 @@ exports.farmerAllOrderList = async (req, res) => {
             })
         };
 
+        const orderDetails = [];
+
+        for (const order of farmerOrder) {
+            const product = await productModel.findById(order.productId).populate('addQuantity').exec();
+
+            if (!product) {
+                continue; // Skip this order if the product is not found
+            }
+
+            const addQuantityObj = product.addQuantity.id(order.addQuantityId);
+
+            orderDetails.push({
+                orderId: order._id,
+                userId: order.userId._id,
+                userName: order.userId.name,
+                productId: product._id,
+                productName: product.productName,
+                quantityOrdered: order.quantity,
+                addQuantityDetails: addQuantityObj ? {
+                    addQuantityId: addQuantityObj._id,
+                    price: addQuantityObj.offerPrice,
+                    availableQuantity: addQuantityObj.quantity,
+                } : 'AddQuantity data not found',
+                totalPrice: order.totalPrice,
+                orderStatus: order.status,
+                orderTime: moment.unix(order.time).format('YYYY-MM-DD HH:mm:ss')
+            });
+        };
+
         const totalDocuments = await farmerOrderModel.countDocuments({ farmerId: req.user._id, isAvailable: true });
 
         return res.status(200).json({
@@ -41,4 +71,7 @@ exports.farmerAllOrderList = async (req, res) => {
         });
     }
 };
+
+
+// orderTime: moment.unix(order.time).format('YYYY-MM-DD HH:mm:ss');
 
