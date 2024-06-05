@@ -203,8 +203,8 @@ exports.getDriverAllOrdersList = async (req, res) => {
             status: true,
             message: 'successfully fetched',
             totalDocuments: totalDocuments,
-            data1: getDate,
-            data: order
+            data: getDate,
+            // data: order
         });
     } catch (error) {
         return res.status(500).json({
