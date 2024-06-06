@@ -720,7 +720,7 @@ const editAddress = async (req, res) => {
     try {
         const user = req.user;
         const { deliveryAddressId } = req.params;
-        const { state, city, postalCode, streetAddress, lat, long } = req.body;
+        const { name, mobile, state, city, postalCode, streetAddress, lat, long } = req.body;
 
         const address = user.deliveryAddress.id(deliveryAddressId);
         // console.log(address);
@@ -732,6 +732,8 @@ const editAddress = async (req, res) => {
             });
         };
 
+        if (name) address.name = name;
+        if (mobile) address.mobile = mobile;
         if (state) address.state = state;
         if (city) address.city = city;
         if (postalCode) address.postalCode = postalCode;
