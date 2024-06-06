@@ -6,17 +6,18 @@ var QRCode = require('qrcode')
 const constants = require("../../config/constants.json");
 
 
-// 05-06-2024
+// 3 times, 04-06, 05-06-2024, 06-06-24
+
 // add product to cart
 const addProductToCart = async (req, res) => {
     try {
         const user = req.user;
-        const { productId, addQuantityId, quantity } = req.body;
+        const { productId, addQuantityId } = req.body;
 
-        if (!productId || !addQuantityId || !quantity) {
+        if (!productId || !addQuantityId) {
             return res.status(400).json({
                 status: false,
-                message: "Please provide productId, addQuantityId, and quantity"
+                message: "Please provide productId and addQuantityId"
             });
         };
 
@@ -36,21 +37,17 @@ const addProductToCart = async (req, res) => {
             });
         };
 
+        const quantity = addQuantityObj.quantity;
+
         if (quantity <= 0) {
             return res.status(400).json({
                 status: false,
-                message: 'Please add a minimum of 1 quantity'
+                message: `The avaialble product quantity is ${quantity}`
+                // message: 'Please add a minimum of 1 quantity'
             });
         };
 
-        if (addQuantityObj.quantity < quantity) {
-            return res.status(400).json({
-                status: false,
-                message: `Available product quantity is ${addQuantityObj.quantity}`
-            });
-        };
-
-        const totalPrice = quantity * addQuantityObj.offerPrice;
+        const totalPrice = addQuantityObj.offerPrice;
 
         const existingCartData = await cartModel.findOne({ userId: user._id });
 
@@ -109,6 +106,135 @@ const addProductToCart = async (req, res) => {
         });
     }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // add product to cart
+// const addProductToCart = async (req, res) => {
+//     try {
+//         const user = req.user;
+//         const { productId, addQuantityId, quantity } = req.body;
+
+//         if (!productId || !addQuantityId || !quantity) {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: "Please provide productId, addQuantityId, and quantity"
+//             });
+//         };
+
+//         const product = await productModel.findOne({ _id: productId });
+//         if (!product) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: 'Product not found'
+//             });
+//         };
+
+//         const addQuantityObj = product.addQuantity.id(addQuantityId);
+//         if (!addQuantityObj) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: `AddQuantity object not found by this Id ${addQuantityId}`
+//             });
+//         };
+
+//         if (quantity <= 0) {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: 'Please add a minimum of 1 quantity'
+//             });
+//         };
+
+//         if (addQuantityObj.quantity < quantity) {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: `Available product quantity is ${addQuantityObj.quantity}`
+//             });
+//         };
+
+//         const totalPrice = quantity * addQuantityObj.offerPrice;
+
+//         const existingCartData = await cartModel.findOne({ userId: user._id });
+
+//         if (existingCartData) {
+//             const existingFarmerIds = existingCartData.productDetails.map(detail => detail.farmerId.toString());
+//             const currentFarmerId = product.farmerId.toString();
+
+//             if (existingFarmerIds.length > 0 && existingFarmerIds[0] !== currentFarmerId) {
+//                 return res.status(400).json({
+//                     status: false,
+//                     message: 'You can only add products from one farmer at a time to your cart'
+//                 });
+//             }
+
+//             existingCartData.productDetails.push({
+//                 productId: productId,
+//                 addQuantityId: addQuantityId,
+//                 farmerId: product.farmerId,
+//                 quantity: quantity,
+//                 totalPrice: totalPrice,
+//                 time: moment().unix().toString(),
+//             });
+
+//             await existingCartData.save();
+
+//             return res.status(201).json({
+//                 status: true,
+//                 message: 'Successfully added to cart',
+//                 data: existingCartData
+//             });
+//         };
+
+//         const newCart = new cartModel({
+//             userId: user._id,
+//             productDetails: [{
+//                 productId: productId,
+//                 addQuantityId: addQuantityId,
+//                 farmerId: product.farmerId,
+//                 quantity: quantity,
+//                 totalPrice: totalPrice,
+//                 time: moment().unix().toString(),
+//             }]
+//         });
+
+//         await newCart.save();
+
+//         return res.status(201).json({
+//             status: true,
+//             message: 'Successfully added to cart',
+//             data: newCart
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message
+//         });
+//     }
+// };
+
+
+
+
+
+
+
+
 
 
 
@@ -224,7 +350,52 @@ const addProductToCart = async (req, res) => {
 
 
 
-// getAllCartProducts
+// // getAllCartProducts
+// const getAllCartProducts = async (req, res) => {
+//     try {
+//         const page = parseInt(req.query.page) || 1;
+//         const limit = parseInt(req.query.limit) || 10;
+
+//         const productList = await cartModel.find({
+//             userId: req.user._id,
+//             // 'productDetails.status': 'AddedToCart'
+//         })
+//             .populate('productDetails.productId')
+//             .exec();
+
+//         if (!productList || productList.length === 0) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: 'Cart list not found'
+//             });
+//         };
+
+//         const getProductDetails = productList.flatMap(cart =>
+//             cart.productDetails.filter(product => product.status === 'AddedToCart')
+//         );
+
+//         const totalDocuments = getProductDetails.length;
+//         const paginatedProductDetails = getProductDetails.slice((page - 1) * limit, page * limit);
+
+//         return res.status(200).json({
+//             status: true,
+//             message: 'all added products to the cart fetched successfully',
+//             totalDocuments: totalDocuments,
+//             data: paginatedProductDetails
+//         })
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message
+//         })
+//     }
+// };
+
+
+
+
+// updated 3 times
+// get all cart products
 const getAllCartProducts = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -232,7 +403,6 @@ const getAllCartProducts = async (req, res) => {
 
         const productList = await cartModel.find({
             userId: req.user._id,
-            // 'productDetails.status': 'AddedToCart'
         })
             .populate('productDetails.productId')
             .exec();
@@ -251,19 +421,38 @@ const getAllCartProducts = async (req, res) => {
         const totalDocuments = getProductDetails.length;
         const paginatedProductDetails = getProductDetails.slice((page - 1) * limit, page * limit);
 
+        const response = paginatedProductDetails.map(productDetail => {
+            const product = productDetail.productId;
+            return {
+                productId: product._id,
+                productName: product.name,
+                productImage: product.image, // Assuming 'image' field exists in product model
+                productPrice: product.price, // Assuming 'price' field exists in product model
+                quantity: productDetail.quantity,
+                totalPrice: productDetail.totalPrice,
+                time: productDetail.time,
+            };
+        });
+
         return res.status(200).json({
             status: true,
-            message: 'all added products to the cart fetched successfully',
+            message: 'All added products to the cart fetched successfully',
             totalDocuments: totalDocuments,
-            data: paginatedProductDetails
-        })
+            data: response
+        });
     } catch (error) {
         return res.status(500).json({
             status: false,
             message: error.message
-        })
+        });
     }
 };
+
+
+
+
+
+
 
 
 // get all palced orders list
@@ -649,4 +838,6 @@ module.exports = {
     removeProductFromCart,
     buyProduct,
 };
+
+
 
