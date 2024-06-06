@@ -12,7 +12,7 @@ const cartModel = new mongoose.Schema(
                 ref: 'product'
             },
             addQuantityId: {
-                type: String,
+                type: mongoose.Schema.Types.ObjectId,
                 default: null,
             },
             farmerId: {
@@ -52,3 +52,4 @@ const cartModel = new mongoose.Schema(
 
 
 module.exports = mongoose.model("cart", cartModel);
+

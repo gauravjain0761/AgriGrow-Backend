@@ -66,8 +66,8 @@ const addProductToCart = async (req, res) => {
                 productId: productId,
                 addQuantityId: addQuantityId,
                 farmerId: product.farmerId,
-                quantity: quantity,
-                totalPrice: totalPrice,
+                quantity: 1,
+                totalPrice: totalPrice * 1,
                 time: moment().unix().toString(),
             });
 
@@ -86,8 +86,8 @@ const addProductToCart = async (req, res) => {
                 productId: productId,
                 addQuantityId: addQuantityId,
                 farmerId: product.farmerId,
-                quantity: quantity,
-                totalPrice: totalPrice,
+                quantity: 1,
+                totalPrice: totalPrice * 1,
                 time: moment().unix().toString(),
             }]
         });
@@ -396,50 +396,100 @@ const addProductToCart = async (req, res) => {
 
 // updated 3 times
 // get all cart products
+// const getAllCartProducts = async (req, res) => {
+//     try {
+//         const page = parseInt(req.query.page) || 1;
+//         const limit = parseInt(req.query.limit) || 10;
+
+//         const cart = await cartModel.findOne({
+//             userId: req.user._id,
+//             'productDetails.status': 'AddedToCart'
+//         })
+//             .populate('productDetails.productId')
+//             .exec();
+
+//         if (!cart || cart.productDetails.length === 0) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: 'Cart list not found'
+//             });
+//         }
+
+//         const getProductDetails = cart.productDetails.filter(product => product.status === 'AddedToCart');
+//         console.log(getProductDetails);
+
+//         const totalDocuments = getProductDetails.length;
+//         const paginatedProductDetails = getProductDetails.slice((page - 1) * limit, page * limit);
+
+//         return res.status(200).json({
+//             status: true,
+//             message: 'All added products to the cart fetched successfully',
+//             totalDocuments: totalDocuments,
+//             data: paginatedProductDetails
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message
+//         });
+//     }
+// };
+
+
+
+
+
+
+// get all cart products
 const getAllCartProducts = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
 
-        const productList = await cartModel.find({
-            userId: req.user._id,
-        })
+        const cart = await cartModel.findOne({ userId: req.user._id })
             .populate('productDetails.productId')
             .exec();
 
-        if (!productList || productList.length === 0) {
+        if (!cart || cart.productDetails.length === 0) {
             return res.status(404).json({
                 status: false,
                 message: 'Cart list not found'
             });
         };
-        
 
-        const getProductDetails = productList.flatMap(cart =>
-            cart.productDetails.filter(product => product.status === 'AddedToCart')
-        );
+        const productDetails = cart.productDetails.filter(product => product.status === 'AddedToCart');
 
-        const totalDocuments = getProductDetails.length;
-        const paginatedProductDetails = getProductDetails.slice((page - 1) * limit, page * limit);
+        const enrichedProductDetails = productDetails.map(detail => {
+            const product = detail.productId;
+            const addQuantityObj = product.addQuantity.id(detail.addQuantityId);
 
-        const response = paginatedProductDetails.map(productDetail => {
-            const product = productDetail.productId;
             return {
-                productId: product._id,
-                productName: product.name,
-                productImage: product.image, // Assuming 'image' field exists in product model
-                productPrice: product.price, // Assuming 'price' field exists in product model
-                quantity: productDetail.quantity,
-                totalPrice: productDetail.totalPrice,
-                time: productDetail.time,
+                ...detail._doc,
+                productId: {
+                    _id: product._id,
+                    farmerId: product.farmerId,
+                    categoryId: product.categoryId,
+                    category: product.category,
+                    productName: product.productName,
+                    description: product.description,
+                    images: product.images,
+                    addQuantity: addQuantityObj,
+                    status: product.status
+                }
             };
         });
+
+        const totalDocuments = enrichedProductDetails.length;
+        const paginatedProductDetails = enrichedProductDetails.slice((page - 1) * limit, page * limit);
+
+        // const subtotal = enrichedProductDetails.reduce((acc, detail) => acc + detail.totalPrice, 0);
 
         return res.status(200).json({
             status: true,
             message: 'All added products to the cart fetched successfully',
             totalDocuments: totalDocuments,
-            data: response
+            data: paginatedProductDetails
+            // subtotal: subtotal,
         });
     } catch (error) {
         return res.status(500).json({
@@ -448,7 +498,6 @@ const getAllCartProducts = async (req, res) => {
         });
     }
 };
-
 
 
 
@@ -595,6 +644,87 @@ const getAllPlacedOrdersList = async (req, res) => {
 
 
 // updateCartProduct
+// const updateCartProduct = async (req, res) => {
+//     try {
+//         const { quantity } = req.body;
+//         const { productDetailsId } = req.params;
+//         const user = req.user;
+
+//         if (!quantity || quantity <= 0) {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: 'Please provide a valid quantity greater than zero'
+//             });
+//         };
+
+//         const cartData = await cartModel.findOne({ userId: user._id });
+//         if (!cartData) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: 'Cart not found'
+//             });
+//         }
+
+//         const productDetail = cartData.productDetails.find(detail => detail._id.toString() === productDetailsId);
+//         if (!productDetail) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: 'Product not found in the cart'
+//             });
+//         }
+
+//         if (productDetail.status !== 'AddedToCart') {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: 'Only products with status "AddedToCart" can be updated'
+//             });
+//         }
+
+//         const product = await productModel.findById(productDetail.productId);
+//         if (!product) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: 'Product not found'
+//             });
+//         }
+
+//         if (product.quantity < quantity) {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: `Available product quantity is ${product.quantity}`
+//             });
+//         }
+
+//         productDetail.quantity = quantity;
+//         productDetail.totalPrice = quantity * product.offerPrice;
+
+//         await cartData.save();
+
+
+//         return res.status(200).json({
+//             status: true,
+//             message: 'product quantity updated successfully',
+//             data: cartData
+//         });
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message
+//         })
+//     }
+// };
+
+
+
+
+
+
+
+
+
+
+
+// updateCartProduct
 const updateCartProduct = async (req, res) => {
     try {
         const { quantity } = req.body;
@@ -606,7 +736,7 @@ const updateCartProduct = async (req, res) => {
                 status: false,
                 message: 'Please provide a valid quantity greater than zero'
             });
-        };
+        }
 
         const cartData = await cartModel.findOne({ userId: user._id });
         if (!cartData) {
@@ -614,22 +744,22 @@ const updateCartProduct = async (req, res) => {
                 status: false,
                 message: 'Cart not found'
             });
-        }
+        };
 
         const productDetail = cartData.productDetails.find(detail => detail._id.toString() === productDetailsId);
         if (!productDetail) {
             return res.status(404).json({
                 status: false,
-                message: 'Product not found in cart'
+                message: 'Product not found in the cart'
             });
-        }
+        };
 
         if (productDetail.status !== 'AddedToCart') {
             return res.status(400).json({
                 status: false,
                 message: 'Only products with status "AddedToCart" can be updated'
             });
-        }
+        };
 
         const product = await productModel.findById(productDetail.productId);
         if (!product) {
@@ -637,81 +767,172 @@ const updateCartProduct = async (req, res) => {
                 status: false,
                 message: 'Product not found'
             });
-        }
+        };
 
-        if (product.quantity < quantity) {
+        const addQuantityObj = product.addQuantity.id(productDetail.addQuantityId);
+        if (!addQuantityObj) {
+            return res.status(404).json({
+                status: false,
+                message: `AddQuantity object not found by this Id ${productDetail.addQuantityId}`
+            });
+        };
+
+        if (addQuantityObj.quantity < quantity) {
             return res.status(400).json({
                 status: false,
-                message: `Available product quantity is ${product.quantity}`
+                message: `Available product quantity is ${addQuantityObj.quantity}`
             });
-        }
+        };
 
         productDetail.quantity = quantity;
-        productDetail.totalPrice = quantity * product.offerPrice;
+        productDetail.totalPrice = quantity * addQuantityObj.offerPrice;
 
         await cartData.save();
 
-
         return res.status(200).json({
             status: true,
-            message: 'product quantity updated successfully',
+            message: 'Product quantity and price updated successfully',
             data: cartData
         });
     } catch (error) {
         return res.status(500).json({
             status: false,
             message: error.message
-        })
+        });
     }
 };
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // removeProductFromCart
+// const removeProductFromCart = async (req, res) => {
+//     try {
+//         const { productDetailsId } = req.params;
+//         // console.log( id );
+//         const cartProduct = await cartModel.findOne({ userId: req.user._id });
+//         if (!cartProduct) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: 'cart product not found'
+//             })
+//         };
+
+//         const product = await productModel.findOne({ _id: cartProduct.productId, isAvailable: true });
+//         if (!product) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: "product not found!",
+//             })
+//         };
+
+//         if (quantity > cartProduct.quantity) {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: `can't remove more than ${cartProduct.quantity} quantity`,
+//             })
+//         };
+
+//         cartProduct.quantity = quantity ? quantity : cartProduct.quantity;
+//         await cartProduct.save();
+
+
+//         // console.log( 1111111, cartProduct );
+//         // console.table( cartProduct );
+//         return res.status(200).json({
+//             status: true,
+//             message: 'all products in the cart fetched successfully',
+//             data: cartProduct
+//         })
+//     } catch (error) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message
+//         })
+//     }
+// };
+
+
+
+
+
+
+
+
+
+
 const removeProductFromCart = async (req, res) => {
     try {
-        const { productDetailsId } = req.params;
-        // console.log( id );
-        const cartProduct = await cartModel.findOne({ userId: req.user._id });
-        if (!cartProduct) {
-            return res.status(404).json({
-                status: false,
-                message: 'cart product not found'
-            })
-        };
+        const user = req.user;
+        const { productId } = req.params;
 
-        const product = await productModel.findOne({ _id: cartProduct.productId, isAvailable: true });
-        if (!product) {
-            return res.status(404).json({
-                status: false,
-                message: "product not found!",
-            })
-        };
-
-        if (quantity > cartProduct.quantity) {
+        if (!productId) {
             return res.status(400).json({
                 status: false,
-                message: `can't remove more than ${cartProduct.quantity} quantity`,
-            })
+                message: "Please provide productId"
+            });
         };
 
-        cartProduct.quantity = quantity ? quantity : cartProduct.quantity;
-        await cartProduct.save();
+        const cart = await cartModel.findOne({ userId: user._id });
+        if (!cart) {
+            return res.status(404).json({
+                status: false,
+                message: 'Cart not found'
+            });
+        };
 
+        const productIndex = cart.productDetails.findIndex(detail => detail._id.toString() === productId);
 
-        // console.log( 1111111, cartProduct );
-        // console.table( cartProduct );
+        if (productIndex === -1) {
+            return res.status(404).json({
+                status: false,
+                message: `Product with id ${productId} not found in the cart`
+            });
+        };
+
+        cart.productDetails.splice(productIndex, 1);
+
+        await cart.save();
+
         return res.status(200).json({
             status: true,
-            message: 'all products in the cart fetched successfully',
-            data: cartProduct
-        })
+            message: 'Product successfully removed from cart',
+            data: cart
+        });
     } catch (error) {
         return res.status(500).json({
             status: false,
             message: error.message
-        })
+        });
     }
 };
+
+
+
+
 
 
 
@@ -757,7 +978,7 @@ const buyProduct = async (req, res) => {
             };
 
             // Find the addQuantity object
-            const addQuantityObj = product.addQuantity.find(element => element._id.toString() === productDetail.addQuantityId);
+            const addQuantityObj = product.addQuantity.find(element => element._id.toString() === productDetail.addQuantityId.toString());
             // console.log('addQuantityObj  ----->', addQuantityObj);
 
             if (!addQuantityObj) {
@@ -800,6 +1021,12 @@ const buyProduct = async (req, res) => {
 
             // Generate QR code for the specific product
             const qrCodeData = await QRCode.toDataURL(productDetail.productId.toString());
+
+
+            // const amount = 100;
+            // const percentage = 12;
+            // const totalAmount = amount + (amount * (percentage / 100));
+
 
             // Update productDetail in cart
             productDetail.time = moment().unix();

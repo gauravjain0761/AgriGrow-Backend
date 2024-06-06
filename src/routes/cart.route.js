@@ -15,17 +15,12 @@ router.get('/getAllPlacedOrdersList', passportAuthentication, userRoleMiddleware
 
 router.patch('/update-cart-product/:productDetailsId', passportAuthentication, userRoleMiddleware, controller.updateCartProduct);
 
-router.delete('/remove-product-from-cart/:productDetailsId', passportAuthentication, userRoleMiddleware, controller.removeProductFromCart);
+router.delete('/remove-product-from-cart/:productId', passportAuthentication, userRoleMiddleware, controller.removeProductFromCart);
 
 router.post('/buyProduct', passportAuthentication, userRoleMiddleware, controller.buyProduct);
 
 
 module.exports = router;
-
-
-
-
-
 
 
 
