@@ -700,6 +700,7 @@ const getAllAddressList = async (req, res) => {
             status: true,
             message: "fetched successfully",
             data: user.deliveryAddress,
+            user: req.user
             // deliveryAddress: deliveryAddress
         });
     } catch (error) {
