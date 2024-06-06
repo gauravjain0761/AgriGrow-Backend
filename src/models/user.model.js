@@ -44,6 +44,14 @@ const userModel = new mongoose.Schema(
         },
         deliveryAddress: {
             type: [{
+                name: {
+                    type: String,
+                    required: true,
+                },
+                mobile: {
+                    type: String,
+                    default: null,
+                },
                 state: {
                     type: String,
                     default: null,

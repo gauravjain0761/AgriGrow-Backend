@@ -663,9 +663,11 @@ const updateProfile = async (req, res) => {
 const addNewAddress = async (req, res) => {
     try {
         const user = req.user;
-        const { state, city, postalCode, streetAddress, lat, long } = req.body;
+        const { name, mobile, state, city, postalCode, streetAddress, lat, long } = req.body;
 
         user.deliveryAddress.push({
+            name: name,
+            mobile: mobile,
             state: state,
             city: city,
             postalCode: postalCode,
@@ -700,7 +702,6 @@ const getAllAddressList = async (req, res) => {
             status: true,
             message: "fetched successfully",
             data: user.deliveryAddress,
-            user: req.user
             // deliveryAddress: deliveryAddress
         });
     } catch (error) {

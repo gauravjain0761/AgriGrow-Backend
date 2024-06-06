@@ -413,6 +413,7 @@ const getAllCartProducts = async (req, res) => {
                 message: 'Cart list not found'
             });
         };
+        
 
         const getProductDetails = productList.flatMap(cart =>
             cart.productDetails.filter(product => product.status === 'AddedToCart')
