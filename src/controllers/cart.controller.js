@@ -447,6 +447,7 @@ const getAllCartProducts = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
 
         const cart = await cartModel.findOne({ userId: req.user._id })
+            .populate('userId')
             .populate('productDetails.productId')
             .exec();
 
@@ -479,6 +480,21 @@ const getAllCartProducts = async (req, res) => {
             };
         });
 
+        // Get user details to extract the delivery address
+        const user = cart.userId;
+        let deliveryAddress = user.deliveryAddress.find(addr => addr.isPrimaryAddress);
+
+        if (!deliveryAddress && user.deliveryAddress.length > 0) {
+            deliveryAddress = user.deliveryAddress[0];
+        };
+
+        if (!deliveryAddress) {
+            return res.status(404).json({
+                status: false,
+                message: 'User delivery address not found'
+            });
+        };
+
         const totalDocuments = enrichedProductDetails.length;
         const paginatedProductDetails = enrichedProductDetails.slice((page - 1) * limit, page * limit);
 
@@ -488,7 +504,8 @@ const getAllCartProducts = async (req, res) => {
             status: true,
             message: 'All added products to the cart fetched successfully',
             totalDocuments: totalDocuments,
-            data: paginatedProductDetails
+            data: paginatedProductDetails,
+            deliveryAddress: deliveryAddress,
             // subtotal: subtotal,
         });
     } catch (error) {

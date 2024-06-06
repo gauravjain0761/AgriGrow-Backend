@@ -11,7 +11,8 @@ const farmerOrderModel = new mongoose.Schema(
             ref: 'product'
         },
         addQuantityId: {
-            type: String
+            type: mongoose.Schema.Types.ObjectId,
+            default: null,
         },
         farmerId: {
             type: mongoose.Schema.Types.ObjectId,
