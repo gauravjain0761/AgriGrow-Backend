@@ -1,5 +1,6 @@
 const farmerOrderModel = require('../models/farmerOrder.model');
 const productModel = require('../models/product.model');
+const userModel = require('../models/user.model');
 const moment = require('moment');
 
 
@@ -30,6 +31,7 @@ exports.farmerAllOrderList = async (req, res) => {
         const orderDetails = [];
 
         for (const order of farmerOrder) {
+            // console.log(order);
             const product = await productModel.findById(order.productId).populate('addQuantity').exec();
 
             if (!product) {
@@ -37,22 +39,27 @@ exports.farmerAllOrderList = async (req, res) => {
             }
 
             const addQuantityObj = product.addQuantity.id(order.addQuantityId);
+            const user = await userModel.findById(order.userId._id);
+            const deliveryAddress = user.deliveryAddress.id(order.deliveryAddressId.toString());
 
             orderDetails.push({
-                orderId: order._id,
-                userId: order.userId._id,
-                userName: order.userId.name,
-                productId: product._id,
-                productName: product.productName,
-                quantityOrdered: order.quantity,
+                _id: order._id,
+                userId: user,
+                productId: product,
+                deliveryAddress: deliveryAddress,
                 addQuantityDetails: addQuantityObj ? {
                     addQuantityId: addQuantityObj._id,
                     price: addQuantityObj.offerPrice,
                     availableQuantity: addQuantityObj.quantity,
                 } : 'AddQuantity data not found',
+                status: order.status,
+                quantity: order.quantity,
                 totalPrice: order.totalPrice,
-                orderStatus: order.status,
-                orderTime: moment.unix(order.time).format('YYYY-MM-DD HH:mm:ss')
+                QRCode: order.QRCode,
+                time: moment.unix(order.time).format('YYYY-MM-DD HH:mm:ss')
+                // userId: order.userId._id,
+                // userName: order.userId.name,
+                // productName: product.productName,
             });
         };
 
@@ -62,7 +69,8 @@ exports.farmerAllOrderList = async (req, res) => {
             status: true,
             message: 'successfully fetched',
             totalDocuments: totalDocuments,
-            data: farmerOrder
+            data: orderDetails,
+            // deliveryAddress: deliveryAddress
         });
     } catch (error) {
         return res.status(500).json({

@@ -22,11 +22,6 @@ const farmerOrderModel = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'farmer',
         },
-        status: {
-            type: String,
-            enum: ['New', 'Failed', 'Success'],
-            default: 'New',
-        },
         quantity: {
             type: Number,
             default: null,
@@ -34,6 +29,15 @@ const farmerOrderModel = new mongoose.Schema(
         totalPrice: {
             type: Number,
             default: null,
+        },
+        QRCode: {
+            type: String,
+            default: null,
+        },
+        status: {
+            type: String,
+            enum: ['New', 'Failed', 'Success'],
+            default: 'New',
         },
         time: {
             type: String,

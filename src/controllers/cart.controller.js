@@ -89,14 +89,19 @@ const addProductToCart = async (req, res) => {
                     status: false,
                     message: 'You can only add products from one farmer at a time to your cart'
                 });
-            }
+            };
+
+            // Update delivery address for products with status 'AddedToCart'
+            existingCartData.productDetails.forEach(detail => {
+                if (detail.status === 'AddedToCart') {
+                    detail.deliveryAddressId = deliveryAddressId;
+                }
+            });
 
             existingCartData.productDetails.push({
                 productId: productId,
                 addQuantityId: addQuantityId,
-
                 deliveryAddressId: deliveryAddressId,
-
                 farmerId: product.farmerId,
                 quantity: 1,
                 totalPrice: totalPrice * 1,
@@ -117,9 +122,7 @@ const addProductToCart = async (req, res) => {
             productDetails: [{
                 productId: productId,
                 addQuantityId: addQuantityId,
-
                 deliveryAddressId: deliveryAddressId,
-
                 farmerId: product.farmerId,
                 quantity: 1,
                 totalPrice: totalPrice * 1,
@@ -1084,35 +1087,36 @@ const buyProduct = async (req, res) => {
             // Update product in the database
             await product.save();
 
-            // Create a new order in the farmerOrderModel
-            const farmerOrder = new farmerOrderModel({
-                userId: user._id,
-                productId: productDetail.productId,
-                deliveryAddressId: productDetail.productId,
-                addQuantityId: productDetail.addQuantityId,
-                farmerId: productDetail.farmerId,
-                status: 'New',
-                quantity: productDetail.quantity,
-                totalPrice: productDetail.totalPrice,
-                time: moment().unix()
-            });
-
-            await farmerOrder.save();
-            // console.log('farmerOrder---->', farmerOrder);
-
             // Generate QR code for the specific product
             const qrCodeData = await QRCode.toDataURL(productDetail.productId.toString());
 
+            // Update productDetail in cart
+            productDetail.time = moment().unix();
+            productDetail.status = 'PlacedOrder';
+            productDetail.QRCode = qrCodeData;
 
             // const amount = 100;
             // const percentage = 12;
             // const totalAmount = amount + (amount * (percentage / 100));
 
 
-            // Update productDetail in cart
-            productDetail.time = moment().unix();
-            productDetail.status = 'PlacedOrder';
-            productDetail.QRCode = qrCodeData;
+            // Create a new order in the farmerOrderModel
+            const farmerOrder = new farmerOrderModel({
+                userId: user._id,
+                productId: productDetail.productId,
+                deliveryAddressId: productDetail.deliveryAddressId,
+                addQuantityId: productDetail.addQuantityId,
+                farmerId: productDetail.farmerId,
+                status: 'New',
+                quantity: productDetail.quantity,
+                totalPrice: productDetail.totalPrice,
+                QRCode: qrCodeData,
+                time: moment().unix()
+            });
+
+            await farmerOrder.save();
+            // console.log('farmerOrder---->', farmerOrder);
+
         };
 
         // Save updated cart data
