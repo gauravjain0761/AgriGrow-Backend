@@ -622,7 +622,7 @@ exports.deliverOrder = async (req, res) => {
 
         order.status = constants.ORDER_STATUS.SUCCESS;
         order.receiverName = 'Self';
-        order.isAvailable = false;
+        // order.isAvailable = false;
         order.time = moment().unix();
         // also update the product model
         await order.save();
@@ -694,7 +694,7 @@ exports.customerNotAvailable = async (req, res) => {
                 order.receiverName = receiverName;
                 order.receiverImage = receiverImage;
                 order.status = constants.ORDER_STATUS.SUCCESS;
-                order.isAvailable = false;
+                // order.isAvailable = false;
                 order.time = moment().unix();
                 // also update the product model
                 await order.save();
