@@ -14,6 +14,10 @@ const farmerOrderModel = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             default: null,
         },
+        deliveryAddressId: {
+            type: mongoose.Schema.Types.ObjectId,
+            default: null,
+        },
         farmerId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'farmer',
@@ -48,4 +52,7 @@ const farmerOrderModel = new mongoose.Schema(
 
 
 module.exports = mongoose.model("farmerOrder", farmerOrderModel);
+
+
+
 

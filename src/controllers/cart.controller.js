@@ -1,4 +1,5 @@
 const cartModel = require('../models/cart.model');
+const userModel = require('../models/user.model');
 const productModel = require('../models/product.model');
 const farmerOrderModel = require('../models/farmerOrder.model');
 const moment = require('moment');
@@ -49,6 +50,34 @@ const addProductToCart = async (req, res) => {
 
         const totalPrice = addQuantityObj.offerPrice;
 
+
+        // -----------------------------------------------------------------------
+        // Fetch the user's delivery address
+        const userDoc = await userModel.findById(user._id);
+        if (!userDoc) {
+            return res.status(404).json({
+                status: false,
+                message: 'User not found'
+            });
+        };
+
+        // Determine the delivery address
+        let deliveryAddress = userDoc.deliveryAddress.find(addr => addr.isPrimaryAddress);
+        if (!deliveryAddress && userDoc.deliveryAddress.length > 0) {
+            deliveryAddress = userDoc.deliveryAddress[0];
+        };
+
+        if (!deliveryAddress) {
+            return res.status(400).json({
+                status: false,
+                message: 'No delivery address found for the user'
+            });
+        };
+
+        const deliveryAddressId = deliveryAddress._id;
+        // -------------------------------------------------------------------------
+
+
         const existingCartData = await cartModel.findOne({ userId: user._id });
 
         if (existingCartData) {
@@ -65,6 +94,9 @@ const addProductToCart = async (req, res) => {
             existingCartData.productDetails.push({
                 productId: productId,
                 addQuantityId: addQuantityId,
+
+                deliveryAddressId: deliveryAddressId,
+
                 farmerId: product.farmerId,
                 quantity: 1,
                 totalPrice: totalPrice * 1,
@@ -85,6 +117,9 @@ const addProductToCart = async (req, res) => {
             productDetails: [{
                 productId: productId,
                 addQuantityId: addQuantityId,
+
+                deliveryAddressId: deliveryAddressId,
+
                 farmerId: product.farmerId,
                 quantity: 1,
                 totalPrice: totalPrice * 1,
@@ -460,6 +495,13 @@ const getAllCartProducts = async (req, res) => {
 
         const productDetails = cart.productDetails.filter(product => product.status === 'AddedToCart');
 
+        if (productDetails.length === 0) {
+            return res.status(404).json({
+                status: false,
+                message: 'Not found any data'
+            });
+        };
+
         const enrichedProductDetails = productDetails.map(detail => {
             const product = detail.productId;
             const addQuantityObj = product.addQuantity.id(detail.addQuantityId);
@@ -480,13 +522,28 @@ const getAllCartProducts = async (req, res) => {
             };
         });
 
-        // Get user details to extract the delivery address
-        const user = cart.userId;
-        let deliveryAddress = user.deliveryAddress.find(addr => addr.isPrimaryAddress);
+        // // Get user details to extract the delivery address
+        // const user = cart.userId;
+        // let deliveryAddress = user.deliveryAddress.find(addr => addr.isPrimaryAddress);
 
-        if (!deliveryAddress && user.deliveryAddress.length > 0) {
-            deliveryAddress = user.deliveryAddress[0];
+
+        // Ensure there are product details and get the delivery address from the first product detail's deliveryAddressId
+        const firstProductDetail = productDetails[0];
+        const firstDeliveryAddressId = firstProductDetail.deliveryAddressId;
+
+        if (!firstDeliveryAddressId) {
+            return res.status(404).json({
+                status: false,
+                message: 'No delivery address ID found in the product details'
+            });
         };
+
+        const user = cart.userId;
+        const deliveryAddress = user.deliveryAddress.id(firstDeliveryAddressId);
+
+        // if (!deliveryAddress && user.deliveryAddress.length > 0) {
+        //     deliveryAddress = user.deliveryAddress[0];
+        // };
 
         if (!deliveryAddress) {
             return res.status(404).json({
@@ -509,6 +566,7 @@ const getAllCartProducts = async (req, res) => {
             // subtotal: subtotal,
         });
     } catch (error) {
+        console.log(error);
         return res.status(500).json({
             status: false,
             message: error.message
@@ -545,6 +603,9 @@ const getAllPlacedOrdersList = async (req, res) => {
         // Paginate the order list
         const paginatedOrderList = orderList.slice(skip, skip + limit);
 
+        // Get user details to extract the delivery address
+        const user = await userModel.findById(req.user._id).exec();
+
         // Format date and time
         const getDate = paginatedOrderList.map(data => {
             const date = new Date(data.time * 1000);
@@ -554,11 +615,13 @@ const getAllPlacedOrdersList = async (req, res) => {
 
             const formattedDate = `${day < 10 ? '0' : ''}${day}-${month < 10 ? '0' : ''}${month}-${year}`;
             const formattedTime = moment(date).format('hh:mm A');
+            const deliveryAddress = user.deliveryAddress.id(data.deliveryAddressId);
 
             return {
                 ...data.toObject(),
                 addProductToCartDate: formattedDate,
                 addProductToCartTime: formattedTime,
+                deliveryAddress: deliveryAddress ? deliveryAddress.toObject() : null,
             };
         });
 
@@ -900,7 +963,7 @@ const updateCartProduct = async (req, res) => {
 
 
 
-
+// remove product from cart
 const removeProductFromCart = async (req, res) => {
     try {
         const user = req.user;
@@ -1025,6 +1088,7 @@ const buyProduct = async (req, res) => {
             const farmerOrder = new farmerOrderModel({
                 userId: user._id,
                 productId: productDetail.productId,
+                deliveryAddressId: productDetail.productId,
                 addQuantityId: productDetail.addQuantityId,
                 farmerId: productDetail.farmerId,
                 status: 'New',
