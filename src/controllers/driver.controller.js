@@ -731,7 +731,7 @@ exports.deliveredOrderDetails = async (req, res) => {
             _id: id,
             driverId: req.user._id,
             status: constants.ORDER_STATUS.SUCCESS,
-            isAvailable: false
+            isAvailable: true
         });
 
         if (!order) {
