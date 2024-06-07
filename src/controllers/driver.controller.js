@@ -3,7 +3,7 @@ const orderModel = require('../models/order.model');
 const crypto = require('crypto-js');
 const constants = require("../../config/constants.json");
 
-const { driverImages, receiverImage, deleteUploadedFiles } = require('../../helpers/multer');
+const { driverImages, receiverImage, /* deleteUploadedFiles */ } = require('../../helpers/multer');
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment');
@@ -649,6 +649,18 @@ exports.deliverOrder = async (req, res) => {
 
 
 
+const deleteUploadedFiles = (file) => {
+    if (!file) return;
+    const filePath = file.path;
+    fs.unlink(filePath, (err) => {
+        if (err) {
+            console.error('Error deleting file:', filePath, err);
+        } else {
+            console.log('File deleted successfully:', filePath);
+        }
+    });
+};
+
 
 // customer not available
 exports.customerNotAvailable = async (req, res) => {
@@ -658,7 +670,7 @@ exports.customerNotAvailable = async (req, res) => {
                 // console.log( 2222, req.files );
                 if (err) {
                     console.log('Error during file upload:', err);
-                    deleteUploadedFiles(req.files);
+                    deleteUploadedFiles(req.file);
                     return res.status(500).send({
                         status: false,
                         message: 'Error during file upload: ' + err.message,
@@ -667,11 +679,11 @@ exports.customerNotAvailable = async (req, res) => {
 
                 const { id } = req.params;
                 const user = req.user;
-                const receiverImage = req.files.receiverImage ? `/uploads/receiverImages/${moment().unix()}-${req.files.receiverImage.originalname}` : null;
                 const { receiverName } = req.body;
 
-                const order = await orderModel.findOne({ _id: id, driverId: user._id, status: "IN_PROGRESS", isAvailable: true });
+                const receiverImage = req.file ? `/uploads/receiverImages/${moment().unix()}-${req.file.originalname}` : null;
 
+                const order = await orderModel.findOne({ _id: id, driverId: user._id, status: "IN_PROGRESS", isAvailable: true });
                 if (!order) {
                     return res.status(404).json({
                         status: false,
@@ -679,9 +691,9 @@ exports.customerNotAvailable = async (req, res) => {
                     })
                 };
 
-                order.receiverImage = receiverImage;
                 order.receiverName = receiverName;
-                order.status = ORDER_STATUS.SUCCESS;
+                order.receiverImage = receiverImage;
+                order.status = constants.ORDER_STATUS.SUCCESS;
                 order.isAvailable = false;
                 order.time = moment().unix();
                 // also update the product model
@@ -693,7 +705,7 @@ exports.customerNotAvailable = async (req, res) => {
                     data: order
                 });
             } catch (error) {
-                deleteUploadedFiles(req.files);
+                deleteUploadedFiles(req.file);
                 console.log(error);
                 return res.status(500).send({
                     status: false,
@@ -702,6 +714,7 @@ exports.customerNotAvailable = async (req, res) => {
             }
         });
     } catch (error) {
+        deleteUploadedFiles(req.file);
         return res.status(500).json({
             status: false,
             message: error.message,
