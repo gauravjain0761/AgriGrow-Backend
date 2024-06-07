@@ -730,7 +730,7 @@ exports.deliveredOrderDetails = async (req, res) => {
         const order = await orderModel.find({
             _id: id,
             driverId: req.user._id,
-            status: constants.ORDER_STATUS.SUCCESS,
+            // status: { $ne: constants.ORDER_STATUS.NEW },
             isAvailable: true
         });
 
