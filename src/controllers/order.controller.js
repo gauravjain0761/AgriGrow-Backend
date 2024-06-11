@@ -3,6 +3,8 @@ const moment = require('moment');
 const constants = require("../../config/constants.json");
 const driverModel = require('../models/driver.model');
 const productModel = require('../models/product.model');
+const farmerOrderModel = require('../models/farmerOrder.model');
+const userModel = require('../models/user.model');
 
 
 
@@ -11,20 +13,36 @@ const productModel = require('../models/product.model');
 exports.addOrder = async (req, res) => {
     try {
         const user = req.user;
-        const { productId } = req.body;
+        const { farmerOrderId } = req.body;
 
-        const product = await productModel.find({ _id: productId });
+        const farmerOrder = await farmerOrderModel.findOne({ _id: farmerOrderId });
 
-        if (product.length === 0) {
+        if (!farmerOrder) {
             return res.status(404).json({
                 status: false,
-                message: "product not found!",
+                message: "farmer order product not found!",
+            })
+        };
+        // console.log(farmerOrder);
+
+        const existOrderData = await orderModel.findOne({ farmerOrderId: farmerOrderId });
+        if (!existOrderData) {
+            return res.status(403).json({
+                status: false,
+                message: "Data already exist!",
             })
         };
 
         const order = new orderModel({
-            userId: user._id,
-            productId: productId,
+            collectionCenterId: user._id,
+            farmerOrderId: farmerOrder._id,
+            userId: farmerOrder.userId,
+            productId: farmerOrder.productId,
+            addQuantityId: farmerOrder.addQuantityId,
+            deliveryAddressId: farmerOrder.deliveryAddressId,
+            farmerId: farmerOrder.farmerId,
+            quantity: farmerOrder.quantity,
+            totalPrice: farmerOrder.totalPrice,
             time: moment().unix(),
         });
 
@@ -43,41 +61,80 @@ exports.addOrder = async (req, res) => {
 };
 
 
-// remove new status
+
 // all order list
 exports.allOrderList = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
 
-        const order = await orderModel.find(
+        const ordersList = await orderModel.find(
             {
-                userId: req.user._id,
-                assignToDriver: false,
+                collectionCenterId: req.user._id,
+                // assignToDriver: false,
                 status: { $ne: constants.ORDER_STATUS.NEW },
                 isAvailable: true
             }
         )
-            // .populate({
-            //     path: 'productId',
-            //     select: '_id productName description images originalPrice offerPrice',
-            // })
+            .populate('userId')
             .populate('productId')
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
             .exec();
 
-        if (!order) {
+        if (!ordersList) {
             return res.status(404).json({
                 status: false,
                 message: "not found!",
             })
         };
 
+
+
+
+        const orderDetails = [];
+
+        for (const order of ordersList) {
+            const product = await productModel.findById(order.productId).populate('addQuantity').exec();
+
+            if (!product) {
+                continue; // Skip this order if the product is not found
+            }
+
+            const addQuantityObj = product.addQuantity.id(order.addQuantityId);
+            const user = await userModel.findById(order.userId._id);
+            const deliveryAddress = user.deliveryAddress.id(order.deliveryAddressId.toString());
+
+            orderDetails.push({
+                _id: order._id,
+                collectionCenterId: req.user._id,
+                farmerOrderId: product.farmerId,
+                userId: user,
+                productId: product,
+                deliveryAddress: deliveryAddress,
+                // addQuantityDetails: addQuantityObj ? {
+                //     addQuantityId: addQuantityObj._id,
+                //     price: addQuantityObj.offerPrice,
+                //     availableQuantity: addQuantityObj.quantity,
+                // } : 'AddQuantity data not found',
+                status: order.status,
+                quantity: order.quantity,
+                totalPrice: order.totalPrice,
+                time: moment.unix(order.time).format('YYYY-MM-DD HH:mm:ss'),
+                driverId: order.driverId,
+                receiverImage: order.receiverImage,
+                receiverName: order.receiverName,
+                reason: order.reason,
+                assignToDriver: order.assignToDriver,
+                isAvailable: order.isAvailable
+            });
+        };
+
+
         const totalDocuments = await orderModel.countDocuments({
-            userId: req.user._id,
-            assignToDriver: false,
+            collectionCenterId: req.user._id,
+            // assignToDriver: false,
             status: { $ne: constants.ORDER_STATUS.NEW },
             isAvailable: true
         });
@@ -86,7 +143,8 @@ exports.allOrderList = async (req, res) => {
             status: true,
             message: 'successfully fetched',
             totalDocuments: totalDocuments,
-            data: order
+            data: orderDetails,
+            // data: orders       
         });
     } catch (error) {
         return res.status(500).json({
@@ -103,33 +161,76 @@ exports.statusNewOrderList = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
 
-        const order = await orderModel.find(
-            { userId: req.user._id, status: constants.ORDER_STATUS.NEW, assignToDriver: false, isAvailable: true }
-        )
-            // .populate({
-            //     path: 'productId',
-            //     select: '_id productName description images originalPrice offerPrice',
-            // })
-            // .exec();
+        const ordersList = await orderModel.find({
+            collectionCenterId: req.user._id,
+            status: constants.ORDER_STATUS.NEW,
+            // assignToDriver: false,
+            isAvailable: true
+        })
+            .populate('userId')
             .populate('productId')
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
             .exec();
 
-        if (!order) {
+        if (!ordersList) {
             return res.status(404).json({
                 status: false,
                 message: "not found!",
             })
         };
-        const totalDocuments = await orderModel.countDocuments({ userId: req.user._id, status: constants.ORDER_STATUS.NEW, assignToDriver: false, isAvailable: true });
+
+        const orderDetails = [];
+
+        for (const order of ordersList) {
+            const product = await productModel.findById(order.productId).populate('addQuantity').exec();
+
+            if (!product) {
+                continue; // Skip this order if the product is not found
+            }
+
+            const addQuantityObj = product.addQuantity.id(order.addQuantityId);
+            const user = await userModel.findById(order.userId._id);
+            const deliveryAddress = user.deliveryAddress.id(order.deliveryAddressId.toString());
+
+            orderDetails.push({
+                _id: order._id,
+                collectionCenterId: req.user._id,
+                farmerOrderId: product.farmerId,
+                userId: user,
+                productId: product,
+                deliveryAddress: deliveryAddress,
+                // addQuantityDetails: addQuantityObj ? {
+                //     addQuantityId: addQuantityObj._id,
+                //     price: addQuantityObj.offerPrice,
+                //     availableQuantity: addQuantityObj.quantity,
+                // } : 'AddQuantity data not found',
+                status: order.status,
+                quantity: order.quantity,
+                totalPrice: order.totalPrice,
+                time: moment.unix(order.time).format('YYYY-MM-DD HH:mm:ss'),
+                driverId: order.driverId,
+                receiverImage: order.receiverImage,
+                receiverName: order.receiverName,
+                reason: order.reason,
+                assignToDriver: order.assignToDriver,
+                isAvailable: order.isAvailable
+            });
+        };
+
+        const totalDocuments = await orderModel.countDocuments({
+            collectionCenterId: req.user._id,
+            status: constants.ORDER_STATUS.NEW,
+            isAvailable: true
+        });
 
         return res.status(200).json({
             status: true,
             message: 'successfully fetched',
             totalDocuments: totalDocuments,
-            data: order
+            data: orderDetails,
+            // data: orders
         });
     } catch (error) {
         return res.status(500).json({
@@ -145,7 +246,7 @@ exports.assignJobToDriver = async (req, res) => {
     try {
         const { productIds, driverId } = req.body;
 
-        const orders = await orderModel.find({ _id: { $in: productIds }, userId: req.user._id, assignToDriver: false });
+        const orders = await orderModel.find({ _id: { $in: productIds }, collectionCenterId: req.user._id, assignToDriver: false });
         console.log('orders ------> ', orders);
 
         if (orders.length === 0) {
@@ -205,14 +306,14 @@ exports.assignJobToDriver = async (req, res) => {
 // search order by order Id
 exports.searchOrderByOrderId = async (req, res) => {
     try {
-        const { orderId } = req.query;
+        const { orderId } = req.params;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const user = req.user;
-
-        const order = await orderModel.find({ _id: orderId, userId: user._id, assignToDriver: false })
+        console.log(user);
+        const order = await orderModel.find({ _id: orderId, collectionCenterId: user._id, /* assignToDriver: false */ })
             .sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).exec();
-
+        
         if (!order) {
             return res.status(404).json({
                 status: false,
@@ -244,7 +345,7 @@ exports.filterOrder = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const user = req.user;
 
-        const orders = await orderModel.find({ userId: user._id })
+        const orders = await orderModel.find({ collectionCenterId: user._id })
             .sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).exec();
 
         if (!orders || orders.length === 0) {
