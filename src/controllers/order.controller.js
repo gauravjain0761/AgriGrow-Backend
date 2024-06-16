@@ -23,13 +23,13 @@ exports.addOrder = async (req, res) => {
                 message: "farmer order product not found!",
             })
         };
-        // console.log(farmerOrder);
 
         const existOrderData = await orderModel.findOne({ farmerOrderId: farmerOrderId });
-        if (!existOrderData) {
-            return res.status(403).json({
+
+        if (existOrderData) {
+            return res.status(409).json({
                 status: false,
-                message: "Data already exist!",
+                message: "Order data already exist!",
             })
         };
 
@@ -47,6 +47,10 @@ exports.addOrder = async (req, res) => {
         });
 
         await order.save();
+
+        farmerOrder.status = 'Dispatched';
+        await farmerOrder.save();
+
         return res.status(201).send({
             status: true,
             message: 'successfully added',
@@ -71,8 +75,8 @@ exports.allOrderList = async (req, res) => {
         const ordersList = await orderModel.find(
             {
                 collectionCenterId: req.user._id,
-                // assignToDriver: false,
-                status: { $ne: constants.ORDER_STATUS.NEW },
+                assignToDriver: true,
+                // status: { $ne: constants.ORDER_STATUS.NEW },
                 isAvailable: true
             }
         )
@@ -164,7 +168,7 @@ exports.statusNewOrderList = async (req, res) => {
         const ordersList = await orderModel.find({
             collectionCenterId: req.user._id,
             status: constants.ORDER_STATUS.NEW,
-            // assignToDriver: false,
+            assignToDriver: false,
             isAvailable: true
         })
             .populate('userId')
@@ -246,7 +250,11 @@ exports.assignJobToDriver = async (req, res) => {
     try {
         const { productIds, driverId } = req.body;
 
-        const orders = await orderModel.find({ _id: { $in: productIds }, collectionCenterId: req.user._id, assignToDriver: false });
+        const orders = await orderModel.find({
+            _id: { $in: productIds },
+            collectionCenterId: req.user._id,
+            assignToDriver: false
+        });
         console.log('orders ------> ', orders);
 
         if (orders.length === 0) {
@@ -282,6 +290,7 @@ exports.assignJobToDriver = async (req, res) => {
         // Update found orders with the assigned driver ID
         const updatedOrders = await Promise.all(foundOrders.map(async (order) => {
             order.driverId = driverId;
+            // order.status = 'AssignToDriver';
             order.assignToDriver = true;
             order.time = moment().unix();
             // return order.save();
@@ -313,7 +322,7 @@ exports.searchOrderByOrderId = async (req, res) => {
         console.log(user);
         const order = await orderModel.find({ _id: orderId, collectionCenterId: user._id, /* assignToDriver: false */ })
             .sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).exec();
-        
+
         if (!order) {
             return res.status(404).json({
                 status: false,

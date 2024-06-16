@@ -32,15 +32,17 @@ router.get('/trackDriverLocation/:driverId', passportAuthentication, ccRoleMiddl
 
 router.get('/driverAllOrderList', passportAuthentication, driverRoleMiddleware, controller.driverAllOrderList);
 
+router.get('/getOrderDetails/:orderId', passportAuthentication, controller.getOrderDetails);
+
 router.patch('/updateOrderStatus/:orderId', passportAuthentication, driverRoleMiddleware, controller.updateOrderStatus);
 
 router.patch('/failedOrder/:orderId', passportAuthentication, driverRoleMiddleware, controller.failedOrder);
 
-router.patch('/deliverOrder/:orderId', passportAuthentication, driverRoleMiddleware, controller.deliverOrder);
+router.patch('/deliverOrder', passportAuthentication, driverRoleMiddleware, controller.deliverOrder);
 
 router.patch('/customerNotAvailable/:id', passportAuthentication, driverRoleMiddleware, controller.customerNotAvailable);
 
-router.patch('/customerNotAvailable/:id', passportAuthentication, driverRoleMiddleware, controller.customerNotAvailable);
+// router.patch('/customerNotAvailable/:id', passportAuthentication, driverRoleMiddleware, controller.customerNotAvailable);
 
 router.get('/deliveredOrderDetails/:id', passportAuthentication, driverRoleMiddleware, controller.deliveredOrderDetails);
 

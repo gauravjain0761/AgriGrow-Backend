@@ -2,6 +2,8 @@ const driverModel = require('../models/driver.model');
 const orderModel = require('../models/order.model');
 const crypto = require('crypto-js');
 const constants = require("../../config/constants.json");
+const productModel = require('../models/product.model');
+const userModel = require('../models/user.model');
 
 const { driverImages, receiverImage, /* deleteUploadedFiles */ } = require('../../helpers/multer');
 const fs = require('fs');
@@ -162,9 +164,7 @@ exports.getDriverAllOrdersList = async (req, res) => {
             })
         };
 
-        const order = await orderModel.find(
-            { driverId: driverId, isAvailable: true }
-        )
+        const order = await orderModel.find({ driverId: driverId, isAvailable: true })
             .populate('productId')
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
@@ -177,7 +177,6 @@ exports.getDriverAllOrdersList = async (req, res) => {
                 message: "Order not found!",
             })
         };
-
 
         const getDate = order.map(data => {
             const date = new Date(data.time * 1000);
@@ -194,8 +193,6 @@ exports.getDriverAllOrdersList = async (req, res) => {
                 formattedTime: formattedTime,        //time is match with orderModel time field so here time show in orderModel time field value
             };
         });
-
-
 
         const totalDocuments = await orderModel.countDocuments({ driverId: driverId, isAvailable: true });
 
@@ -512,6 +509,55 @@ exports.driverAllOrderList = async (req, res) => {
 
 
 
+// getOrderDetails
+exports.getOrderDetails = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const order = await orderModel.findOne({ _id: orderId })
+            .populate('userId')
+            .populate('productId')
+            .exec();
+        // console.log(order);
+
+        if (!order) {
+            return res.status(404).json({
+                status: false,
+                message: "order not found!",
+            })
+        };
+
+        const product = await productModel.findById(order.productId);
+
+        const addQuantityObj = product.addQuantity.id(order.addQuantityId.toString());
+        // console.log(addQuantityObj);
+
+        const user = await userModel.findById(order.userId._id);
+        const deliveryAddress = user.deliveryAddress.id(order.deliveryAddressId.toString());
+        // console.log(deliveryAddress);
+
+        const data = {
+            ...order.toObject(),
+            addQuantityObj,
+            deliveryAddress
+        };
+
+        return res.status(200).json({
+            status: true,
+            message: 'successfully fetched',
+            // data: order,
+            data: data
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: error.message,
+        });
+    }
+};
+
+
+
 // update order status from New to InProgress
 exports.updateOrderStatus = async (req, res) => {
     try {
@@ -538,7 +584,7 @@ exports.updateOrderStatus = async (req, res) => {
                 status: false,
                 message: 'Order not found!',
             });
-        }
+        };
 
         order.status = status.toUpperCase();
         await order.save();
@@ -564,7 +610,12 @@ exports.failedOrder = async (req, res) => {
         const { reason } = req.body;
         const user = req.user;
 
-        const order = await orderModel.findOne({ _id: orderId, driverId: user._id, status: "IN_PROGRESS" });
+        const order = await orderModel.findOne({
+            _id: orderId,
+            driverId: user._id,
+            status: "IN_PROGRESS"
+        });
+
         if (!order) {
             return res.status(404).json({
                 status: false,
@@ -594,8 +645,8 @@ exports.failedOrder = async (req, res) => {
 // deliver order
 exports.deliverOrder = async (req, res) => {
     try {
-        const { orderId } = req.params;
-        const { scannedQRCode } = req.body; // QR code data from the customer
+        // const { orderId } = req.params;
+        const { orderId, scannedQRCode } = req.body; // QR code data from the customer
         const user = req.user;
 
         const order = await orderModel.findOne({
@@ -612,8 +663,9 @@ exports.deliverOrder = async (req, res) => {
             })
         };
 
-        // Validate the scanned QR code against the order's productId
-        if (scannedQRCode !== order.productId.toString()) {
+        // Validate the scanned QR code against the order's addQuantityId
+        // if (scannedQRCode !== order.productId.toString()) {
+        if (scannedQRCode !== order.addQuantityId.toString()) {
             return res.status(400).json({
                 status: false,
                 message: "Invalid QR code!"
@@ -727,12 +779,13 @@ exports.customerNotAvailable = async (req, res) => {
 exports.deliveredOrderDetails = async (req, res) => {
     try {
         const { id } = req.params;
-        const order = await orderModel.find({
-            _id: id,
-            driverId: req.user._id,
-            // status: { $ne: constants.ORDER_STATUS.NEW },
+        const order = await orderModel.findOne({
+            _id: id, driverId: req.user._id,  // status: { $ne: constants.ORDER_STATUS.NEW },  
             isAvailable: true
-        });
+        })
+            .populate('userId')
+            .populate('productId')
+            .exec();
 
         if (!order) {
             return res.status(404).json({
@@ -741,10 +794,22 @@ exports.deliveredOrderDetails = async (req, res) => {
             })
         };
 
+        const product = await productModel.findById(order.productId);
+        const addQuantityObj = product.addQuantity.id(order.addQuantityId.toString());
+
+        const user = await userModel.findById(order.userId._id);
+        const deliveryAddress = user.deliveryAddress.id(order.deliveryAddressId.toString());
+
+        const data = {
+            ...order.toObject(),
+            addQuantityObj,
+            deliveryAddress
+        };
+
         return res.status(200).json({
             status: true,
             message: 'successfully fetched',
-            data: order
+            data: data
         });
     } catch (error) {
         return res.status(500).json({

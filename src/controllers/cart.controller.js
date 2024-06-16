@@ -1088,7 +1088,9 @@ const buyProduct = async (req, res) => {
             await product.save();
 
             // Generate QR code for the specific product
-            const qrCodeData = await QRCode.toDataURL(productDetail.productId.toString());
+
+            // const qrCodeData = await QRCode.toDataURL(productDetail.productId.toString());
+            const qrCodeData = await QRCode.toDataURL(addQuantityObj._id.toString());
 
             // Update productDetail in cart
             productDetail.time = moment().unix();
