@@ -22,10 +22,6 @@ const userModel = new mongoose.Schema(
             unique: true,
             default: null,
         },
-        // verificationCode: {
-        //     type: String,
-        //     default: null,
-        // },
         image: {
             type: String,
             default: null,
@@ -107,6 +103,26 @@ const userModel = new mongoose.Schema(
         isCollectionCenter: {
             type: Boolean,
             default: false,
+        },
+        ratings: {
+            type: [{
+                userId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'user',
+                    required: true,
+                },
+                rating: {
+                    type: Number,
+                    required: true,
+                    min: 1,
+                    max: 5,
+                },
+            }],
+            default: []
+        },
+        averageRating: {
+            type: Number,
+            default: 0,
         },
         deviceToken: {
             type: String,

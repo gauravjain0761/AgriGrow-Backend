@@ -3,32 +3,6 @@ const constants = require("../../config/constants.json");
 
 const orderModel = new mongoose.Schema(
     {
-        // collectionCenterId: {
-        //     type: mongoose.Schema.Types.ObjectId,
-        //     ref: 'collectionCenter',
-        //     required: true,
-        // },
-        // userId: {
-        //     type: mongoose.Schema.Types.ObjectId,
-        //     default: null
-        // },
-        // productId: {
-        //     type: mongoose.Schema.Types.ObjectId,
-        //     ref: 'product'
-        // },
-        // orderId: {
-        //     type: String,
-        //     default: null,
-        // },
-
-
-
-
-
-
-
-
-        // --------------------------------------------------------------------------------
         collectionCenterId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'collectionCenter',

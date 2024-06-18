@@ -39,8 +39,8 @@ const cartModel = new mongoose.Schema(
             },
             status: {
                 type: String,
-                enum: ['AddedToCart', 'PlacedOrder', 'Failed', 'Received'],
-                default: 'AddedToCart',
+                enum: ['ADDED_TO_CART', 'PLACED_ORDER', 'FAILED', 'SUCCESS'],
+                default: 'ADDED_TO_CART',
             },
             QRCode: {
                 type: String,
@@ -56,4 +56,21 @@ const cartModel = new mongoose.Schema(
 
 
 module.exports = mongoose.model("cart", cartModel);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -19,6 +19,9 @@ router.delete('/remove-product-from-cart/:productId', passportAuthentication, us
 
 router.post('/buyProduct', passportAuthentication, userRoleMiddleware, controller.buyProduct);
 
+router.post('/giveratingTotheFarmer', passportAuthentication, userRoleMiddleware, controller.giveratingTotheFarmer);
+
+
 
 module.exports = router;
 

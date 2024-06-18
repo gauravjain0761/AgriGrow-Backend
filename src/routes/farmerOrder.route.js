@@ -9,6 +9,6 @@ const { farmerRoleMiddleware } = require('../../config/userRoleMiddleware');
 
 router.get('/farmerAllOrderList', passportAuthentication, farmerRoleMiddleware, controller.farmerAllOrderList);
 
-
+// router.post('/giveratingTotheUser', passportAuthentication, userRoleMiddleware, controller.giveratingTotheUser);
 
 module.exports = router;

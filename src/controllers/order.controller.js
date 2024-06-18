@@ -48,7 +48,7 @@ exports.addOrder = async (req, res) => {
 
         await order.save();
 
-        farmerOrder.status = 'Dispatched';
+        farmerOrder.status = 'DISPATCHED';
         await farmerOrder.save();
 
         return res.status(201).send({

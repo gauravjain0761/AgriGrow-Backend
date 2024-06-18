@@ -157,6 +157,26 @@ const farmerModel = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        ratings: {
+            type: [{
+                userId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'user',
+                    required: true,
+                },
+                rating: {
+                    type: Number,
+                    required: true,
+                    min: 1,
+                    max: 5,
+                },
+            }],
+            default: []
+        },
+        averageRating: {
+            type: Number,
+            default: 0,
+        },
         deviceToken: {
             type: String,
             default: null,

@@ -36,8 +36,8 @@ const farmerOrderModel = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['New', 'Failed', 'Success', 'Received', 'Dispatched'],
-            default: 'New',
+            enum: ['NEW', 'FAILED', 'SUCCESS', 'DISPATCHED'],
+            default: 'NEW',
         },
         time: {
             type: String,
