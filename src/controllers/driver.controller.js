@@ -4,6 +4,8 @@ const crypto = require('crypto-js');
 const constants = require("../../config/constants.json");
 const productModel = require('../models/product.model');
 const userModel = require('../models/user.model');
+const cartModel = require('../models/cart.model');
+const farmerOrderModel = require('../models/farmerOrder.model');
 
 const { driverImages, receiverImage, /* deleteUploadedFiles */ } = require('../../helpers/multer');
 const fs = require('fs');
@@ -578,13 +580,21 @@ exports.updateOrderStatus = async (req, res) => {
             }
         };
 
-        const order = await orderModel.findOne({ _id: orderId, driverId: user._id });
+        const order = await orderModel.findOne({ _id: orderId.toString(), driverId: user._id });
         if (!order) {
             return res.status(404).json({
                 status: false,
                 message: 'Order not found!',
             });
         };
+
+        // Prevent status update if the current status is SUCCESS or FAILED
+        if (order.status === 'SUCCESS' || order.status === 'FAILED') {
+            return res.status(400).json({
+                status: false,
+                message: `Order status is already ${order.status} and cannot be updated.`,
+            });
+        }
 
         order.status = status.toUpperCase();
         await order.save();
@@ -611,7 +621,7 @@ exports.failedOrder = async (req, res) => {
         const user = req.user;
 
         const order = await orderModel.findOne({
-            _id: orderId,
+            _id: orderId.toString(),
             driverId: user._id,
             status: "IN_PROGRESS"
         });
@@ -627,12 +637,54 @@ exports.failedOrder = async (req, res) => {
         order.reason = reason;
         await order.save();
 
+        // console.log('order---------------->', order);
+
+        // Find the cart item associated with the order
+        const cart = await cartModel.findOne({
+            'productDetails.productId': order.productId, userId: order.userId
+        });
+        // console.log('cart----------->', cart);
+
+        if (!cart) {
+            return res.status(404).json({
+                status: false,
+                message: "Product not found in cart!",
+            });
+        }
+
+        // Update the status of the product in the cart to FAILED
+        cart.productDetails.forEach(productDetail => {
+            if (productDetail.productId.toString() === order.productId.toString()) {
+                productDetail.status = "FAILED";
+            }
+        });
+        await cart.save();
+
+        // Find the farmer order associated with the order
+        const farmerOrder = await farmerOrderModel.findOne({
+            productId: order.productId,
+            userId: order.userId
+        });
+        // console.log('farmerOrder----->', farmerOrder);
+
+        if (!farmerOrder) {
+            return res.status(404).json({
+                status: false,
+                message: "Farmer order not found!",
+            });
+        };
+
+        farmerOrder.status = "FAILED";
+        await farmerOrder.save();
+
+
         return res.status(200).json({
             status: true,
             message: 'failed order',
             data: order
         });
     } catch (error) {
+        console.log(error);
         return res.status(500).json({
             status: false,
             message: error.message,

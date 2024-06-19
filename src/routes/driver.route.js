@@ -42,8 +42,6 @@ router.patch('/deliverOrder', passportAuthentication, driverRoleMiddleware, cont
 
 router.patch('/customerNotAvailable/:id', passportAuthentication, driverRoleMiddleware, controller.customerNotAvailable);
 
-// router.patch('/customerNotAvailable/:id', passportAuthentication, driverRoleMiddleware, controller.customerNotAvailable);
-
 router.get('/deliveredOrderDetails/:id', passportAuthentication, driverRoleMiddleware, controller.deliveredOrderDetails);
 
 router.patch('/addDriverLocation', passportAuthentication, driverRoleMiddleware, controller.addDriverLocation);

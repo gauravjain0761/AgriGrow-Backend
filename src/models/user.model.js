@@ -106,9 +106,9 @@ const userModel = new mongoose.Schema(
         },
         ratings: {
             type: [{
-                userId: {
+                farmerId: {
                     type: mongoose.Schema.Types.ObjectId,
-                    ref: 'user',
+                    ref: 'farmer',
                     required: true,
                 },
                 rating: {
