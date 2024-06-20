@@ -82,7 +82,10 @@ const addProductToCart = async (req, res) => {
         const existingCartData = await cartModel.findOne({ userId: user._id });
 
         if (existingCartData) {
-            const existingFarmerIds = existingCartData.productDetails.map(detail => detail.farmerId.toString());
+            const existingFarmerIds = existingCartData.productDetails
+                .filter(detail => detail.status === 'ADDED_TO_CART')
+                .map(detail => detail.farmerId.toString());
+
             const currentFarmerId = product.farmerId.toString();
 
             if (existingFarmerIds.length > 0 && existingFarmerIds[0] !== currentFarmerId) {
@@ -99,15 +102,28 @@ const addProductToCart = async (req, res) => {
                 }
             });
 
-            existingCartData.productDetails.push({
-                productId: productId,
-                addQuantityId: addQuantityId,
-                deliveryAddressId: deliveryAddressId,
-                farmerId: product.farmerId,
-                quantity: 1,
-                totalPrice: totalPrice * 1,
-                time: moment().unix().toString(),
+            // Check if the productId and addQuantityId already exist in the cart
+            let productExists = false;
+            existingCartData.productDetails.forEach(detail => {
+                if (detail.productId.toString() === productId && detail.addQuantityId.toString() === addQuantityId) {
+                    detail.quantity += 1; // Increment quantity
+                    detail.totalPrice += totalPrice; // Update totalPrice
+                    productExists = true;
+                }
             });
+
+            if (!productExists) {
+                existingCartData.productDetails.push({
+                    productId: productId,
+                    addQuantityId: addQuantityId,
+                    deliveryAddressId: deliveryAddressId,
+                    farmerId: product.farmerId,
+                    quantity: 1,
+                    totalPrice: totalPrice * 1,
+                    time: moment().unix().toString(),
+                    status: 'ADDED_TO_CART'
+                });
+            };
 
             await existingCartData.save();
 

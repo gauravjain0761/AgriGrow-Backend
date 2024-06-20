@@ -94,9 +94,6 @@ exports.allOrderList = async (req, res) => {
             })
         };
 
-
-
-
         const orderDetails = [];
 
         for (const order of ordersList) {
@@ -105,9 +102,11 @@ exports.allOrderList = async (req, res) => {
             if (!product) {
                 continue; // Skip this order if the product is not found
             }
+            // console.log('order---------->', order);
 
             const addQuantityObj = product.addQuantity.id(order.addQuantityId);
-            const user = await userModel.findById(order.userId._id);
+            const user = await userModel.findById(order.userId);
+            // console.log('user------------->', user);
             const deliveryAddress = user.deliveryAddress.id(order.deliveryAddressId.toString());
 
             orderDetails.push({
@@ -138,8 +137,8 @@ exports.allOrderList = async (req, res) => {
 
         const totalDocuments = await orderModel.countDocuments({
             collectionCenterId: req.user._id,
-            // assignToDriver: false,
-            status: { $ne: constants.ORDER_STATUS.NEW },
+            assignToDriver: true,
+            // status: { $ne: constants.ORDER_STATUS.NEW },
             isAvailable: true
         });
 
@@ -151,6 +150,7 @@ exports.allOrderList = async (req, res) => {
             // data: orders       
         });
     } catch (error) {
+        // console.log(error);
         return res.status(500).json({
             status: false,
             message: error.message,
@@ -226,6 +226,7 @@ exports.statusNewOrderList = async (req, res) => {
         const totalDocuments = await orderModel.countDocuments({
             collectionCenterId: req.user._id,
             status: constants.ORDER_STATUS.NEW,
+            assignToDriver: false,
             isAvailable: true
         });
 

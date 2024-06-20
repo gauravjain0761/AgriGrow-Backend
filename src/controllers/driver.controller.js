@@ -730,13 +730,45 @@ exports.deliverOrder = async (req, res) => {
         order.time = moment().unix();
         // also update the product model
         await order.save();
+        // console.log('order---------------->', order);
 
-        // Also update the product model (if needed)
-        // const product = await productModel.findById(order.productId);
-        // if (product) {
-        //     product.status = constants.PRODUCT_STATUS.DELIVERED;
-        //     await product.save();
-        // }
+        // Find the cart item associated with the order
+        const cart = await cartModel.findOne({
+            'productDetails.productId': order.productId, userId: order.userId
+        });
+        // console.log('cart----------->', cart);
+
+        if (!cart) {
+            return res.status(404).json({
+                status: false,
+                message: "Product not found in cart!",
+            });
+        }
+
+        // Update the status of the product in the cart to SUCCESS
+        cart.productDetails.forEach(productDetail => {
+            if (productDetail.productId.toString() === order.productId.toString()) {
+                productDetail.status = "SUCCESS";
+            }
+        });
+        await cart.save();
+
+        // Find the farmer order associated with the order
+        const farmerOrder = await farmerOrderModel.findOne({
+            productId: order.productId,
+            userId: order.userId
+        });
+        // console.log('farmerOrder----->', farmerOrder);
+
+        if (!farmerOrder) {
+            return res.status(404).json({
+                status: false,
+                message: "Farmer order not found!",
+            });
+        };
+
+        farmerOrder.status = "SUCCESS";
+        await farmerOrder.save();
 
         return res.status(200).json({
             status: true,

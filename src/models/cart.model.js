@@ -59,18 +59,3 @@ module.exports = mongoose.model("cart", cartModel);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
