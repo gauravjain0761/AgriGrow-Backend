@@ -11,7 +11,7 @@ const orderModel = new mongoose.Schema(
         farmerOrderId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'farmerOrder',
-            unique: true,
+            // unique: true,
         },
         userId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -96,4 +96,5 @@ const orderModel = new mongoose.Schema(
 
 
 module.exports = mongoose.model("order", orderModel);
+
 

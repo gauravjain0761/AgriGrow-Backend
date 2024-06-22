@@ -3,6 +3,8 @@ const userModel = require('../models/user.model');
 const productModel = require('../models/product.model');
 const farmerModel = require('../models/farmer.model');
 const farmerOrderModel = require('../models/farmerOrder.model');
+const collectionCenterModel = require('../models/collectionCenter.model');
+const orderModel = require('../models/order.model');
 const moment = require('moment');
 var QRCode = require('qrcode')
 const constants = require("../../config/constants.json");
@@ -566,6 +568,28 @@ const buyProduct = async (req, res) => {
             await farmerOrder.save();
             // console.log('farmerOrder---->', farmerOrder);
 
+            // save the buy product in all collection center orders list
+            const collectionCenters = await collectionCenterModel.find({});
+            // console.log(collectionCenters.length);
+
+            for (let center of collectionCenters) {
+                console.log(productDetail.farmerId);
+                const order = new orderModel({
+                    collectionCenterId: center._id,
+                    farmerOrderId: productDetail.farmerId.toString(),
+                    userId: user._id,
+                    productId: productDetail.productId,
+                    addQuantityId: productDetail.addQuantityId,
+                    deliveryAddressId: productDetail.deliveryAddressId,
+                    farmerId: productDetail.farmerId,
+                    quantity: productDetail.quantity,
+                    totalPrice: productDetail.totalPrice,
+                    status: 'NEW',
+                    time: moment().unix()
+                });
+                await order.save();
+            };
+
         };
 
         // Save updated cart data
@@ -577,6 +601,7 @@ const buyProduct = async (req, res) => {
             data: cartData
         });
     } catch (error) {
+        console.log(error);
         return res.status(500).json({
             status: false,
             message: error.message
