@@ -69,11 +69,11 @@ const driverModel = new mongoose.Schema(
         },
         lat: {
             type: String,
-            default: null,
+            default: '0.0000',
         },
         long: {
             type: String,
-            default: null,
+            default: '0.0000',
         },
         deviceToken: {
             type: String,
