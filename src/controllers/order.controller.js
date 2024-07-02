@@ -13,9 +13,9 @@ const userModel = require('../models/user.model');
 exports.addOrder = async (req, res) => {
     try {
         const user = req.user;
-        const { farmerOrderId } = req.body;
+        const { scannedFarmerOrderQR } = req.body;
 
-        const farmerOrder = await farmerOrderModel.findOne({ _id: farmerOrderId });
+        const farmerOrder = await farmerOrderModel.findOne({ _id: scannedFarmerOrderQR });
 
         if (!farmerOrder) {
             return res.status(404).json({
@@ -24,7 +24,7 @@ exports.addOrder = async (req, res) => {
             })
         };
 
-        const existOrderData = await orderModel.findOne({ farmerOrderId: farmerOrderId });
+        const existOrderData = await orderModel.findOne({ farmerOrderId: scannedFarmerOrderQR });
 
         if (existOrderData) {
             return res.status(409).json({

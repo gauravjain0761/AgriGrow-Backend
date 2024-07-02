@@ -81,21 +81,22 @@ const addProductToCart = async (req, res) => {
         // -------------------------------------------------------------------------
 
 
-        const existingCartData = await cartModel.findOne({ userId: user._id });
+        let existingCartData = await cartModel.findOne({ userId: user._id });
 
         if (existingCartData) {
-            const existingFarmerIds = existingCartData.productDetails
-                .filter(detail => detail.status === 'ADDED_TO_CART')
-                .map(detail => detail.farmerId.toString());
 
-            const currentFarmerId = product.farmerId.toString();
+            // const existingFarmerIds = existingCartData.productDetails
+            //     .filter(detail => detail.status === 'ADDED_TO_CART')
+            //     .map(detail => detail.farmerId.toString());
 
-            if (existingFarmerIds.length > 0 && existingFarmerIds[0] !== currentFarmerId) {
-                return res.status(400).json({
-                    status: false,
-                    message: 'You can only add products from one farmer at a time to your cart'
-                });
-            };
+            // const currentFarmerId = product.farmerId.toString();
+
+            // if (existingFarmerIds.length > 0 && existingFarmerIds[0] !== currentFarmerId) {
+            //     return res.status(400).json({
+            //         status: false,
+            //         message: 'You can only add products from one farmer at a time to your cart'
+            //     });
+            // };
 
             // Update delivery address for products with status 'AddedToCart'
             existingCartData.productDetails.forEach(detail => {
@@ -551,6 +552,7 @@ const buyProduct = async (req, res) => {
             // const totalAmount = amount + (amount * (percentage / 100));
 
 
+
             // Create a new order in the farmerOrderModel
             const farmerOrder = new farmerOrderModel({
                 userId: user._id,
@@ -565,30 +567,33 @@ const buyProduct = async (req, res) => {
                 time: moment().unix()
             });
 
+            const newQRCode = await QRCode.toDataURL(farmerOrder._id.toString());
+            farmerOrder.QRCode = newQRCode;
+
             await farmerOrder.save();
             // console.log('farmerOrder---->', farmerOrder);
 
-            // save the buy product in all collection center orders list
-            const collectionCenters = await collectionCenterModel.find({});
-            // console.log(collectionCenters.length);
+            //     // save the buy product in all collection center orders list
+            //     const collectionCenters = await collectionCenterModel.find({});
+            //     // console.log(collectionCenters.length);
 
-            for (let center of collectionCenters) {
-                console.log(productDetail.farmerId);
-                const order = new orderModel({
-                    collectionCenterId: center._id,
-                    farmerOrderId: productDetail.farmerId.toString(),
-                    userId: user._id,
-                    productId: productDetail.productId,
-                    addQuantityId: productDetail.addQuantityId,
-                    deliveryAddressId: productDetail.deliveryAddressId,
-                    farmerId: productDetail.farmerId,
-                    quantity: productDetail.quantity,
-                    totalPrice: productDetail.totalPrice,
-                    status: 'NEW',
-                    time: moment().unix()
-                });
-                await order.save();
-            };
+            //     for (let center of collectionCenters) {
+            //         console.log(productDetail.farmerId);
+            //         const order = new orderModel({
+            //             collectionCenterId: center._id,
+            //             farmerOrderId: productDetail.farmerId.toString(),
+            //             userId: user._id,
+            //             productId: productDetail.productId,
+            //             addQuantityId: productDetail.addQuantityId,
+            //             deliveryAddressId: productDetail.deliveryAddressId,
+            //             farmerId: productDetail.farmerId,
+            //             quantity: productDetail.quantity,
+            //             totalPrice: productDetail.totalPrice,
+            //             status: 'NEW',
+            //             time: moment().unix()
+            //         });
+            //         await order.save();
+            //     };
 
         };
 
